@@ -1,0 +1,42 @@
+[package]
+name = "ipkt"
+description = "Windows network protocol toolkit — facade crate (NTLM, SMB, Kerberos, …)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[dependencies]
+ipkt-core.workspace = true
+ipkt-ntlm = { workspace = true, optional = true }
+ipkt-smb = { workspace = true, optional = true }
+ipkt-kerberos = { workspace = true, optional = true }
+ipkt-dcerpc = { workspace = true, optional = true }
+ipkt-rpc = { workspace = true, optional = true }
+ipkt-ldap = { workspace = true, optional = true }
+ipkt-wmi = { workspace = true, optional = true }
+
+[features]
+default = ["ntlm"]
+full = ["ntlm", "smb-rpc", "kerberos-kdc", "dcerpc", "rpc", "ldap-client", "wmi"]
+ntlm = ["dep:ipkt-ntlm"]
+smb = ["dep:ipkt-smb", "ntlm"]
+smb-rpc = ["smb", "ipkt-smb/rpc"]
+kerberos = ["dep:ipkt-kerberos"]
+kerberos-kdc = ["kerberos", "ipkt-kerberos/kdc"]
+dcerpc = ["dep:ipkt-dcerpc"]
+rpc = ["dep:ipkt-rpc", "dcerpc"]
+ldap = ["dep:ipkt-ldap"]
+ldap-client = ["ldap", "ipkt-ldap/client"]
+wmi = ["dep:ipkt-wmi", "dcerpc"]
+serde = ["ipkt-core/serde", "ipkt-ntlm?/serde"]
+
+[lints]
+workspace = true

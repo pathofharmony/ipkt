@@ -1,0 +1,28 @@
+[package]
+name = "ipkt-core"
+description = "Core binary (de)serialization primitives and shared utilities for the ipkt toolkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+hex.workspace = true
+
+[features]
+default = ["serde"]
+# Derive `serde::{Serialize, Deserialize}` for the public types where it makes sense.
+serde = ["dep:serde"]
+
+[lints]
+workspace = true

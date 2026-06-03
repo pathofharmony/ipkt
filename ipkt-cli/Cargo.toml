@@ -1,0 +1,27 @@
+[package]
+name = "ipkt-cli"
+description = "Command-line tools for the ipkt toolkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[[bin]]
+name = "ipkt"
+path = "src/main.rs"
+
+[dependencies]
+ipkt = { path = "../ipkt", features = ["full"] }
+ipkt-kerberos = { path = "../ipkt-kerberos", features = ["kdc"] }
+clap.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+hex.workspace = true
+
+[lints]
+workspace = true

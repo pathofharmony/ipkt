@@ -1,0 +1,23 @@
+[package]
+name = "ipkt-rpc"
+description = "High-level MSRPC interfaces (NDR + SAMR subset) for the ipkt toolkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+ipkt-core.workspace = true
+ipkt-dcerpc.workspace = true
+ipkt-ntlm.workspace = true
+des.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

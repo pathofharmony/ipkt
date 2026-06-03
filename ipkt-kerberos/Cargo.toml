@@ -1,0 +1,38 @@
+[package]
+name = "ipkt-kerberos"
+description = "Kerberos v5 (RFC 4120 / MS-KILE) for the ipkt toolkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+ipkt-core.workspace = true
+thiserror.workspace = true
+md-5.workspace = true
+md4.workspace = true
+hmac.workspace = true
+sha1.workspace = true
+aes = "0.9"
+cts = "0.7"
+cipher = "0.5"
+des.workspace = true
+pbkdf2.workspace = true
+tokio = { workspace = true, optional = true }
+
+[features]
+default = []
+kdc = ["dep:tokio"]
+
+[dev-dependencies]
+hex.workspace = true
+rand.workspace = true
+
+[lints]
+workspace = true

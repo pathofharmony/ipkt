@@ -1,0 +1,40 @@
+[package]
+name = "ipkt-smb"
+description = "SMB2/3 client for the ipkt toolkit (MS-SMB2)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+ipkt-core.workspace = true
+ipkt-ntlm.workspace = true
+thiserror.workspace = true
+bitflags.workspace = true
+tokio.workspace = true
+bytes.workspace = true
+hmac.workspace = true
+sha2.workspace = true
+aes-gcm.workspace = true
+ipkt-dcerpc = { workspace = true, optional = true }
+ipkt-rpc = { workspace = true, optional = true }
+
+[dev-dependencies]
+hex.workspace = true
+ipkt-ntlm = { workspace = true, features = ["rand"] }
+
+[features]
+default = []
+# Async TCP client (requires tokio runtime).
+client = []
+# RPC BIND/REQUEST over SMB named pipes (requires `ipkt-dcerpc`).
+rpc = ["dep:ipkt-dcerpc", "dep:ipkt-rpc"]
+
+[lints]
+workspace = true

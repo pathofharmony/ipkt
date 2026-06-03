@@ -1,0 +1,39 @@
+[package]
+name = "ipkt-ntlm"
+description = "NTLM / NTLMSSP authentication (NTLMv1 & NTLMv2) for the ipkt toolkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+ipkt-core.workspace = true
+thiserror.workspace = true
+serde = { workspace = true, optional = true }
+bitflags.workspace = true
+md4.workspace = true
+md-5.workspace = true
+hmac.workspace = true
+des.workspace = true
+rand = { workspace = true, optional = true }
+
+[dev-dependencies]
+hex.workspace = true
+
+[features]
+default = ["serde", "rand"]
+# Derive `serde` impls for the public message/AV-pair types.
+serde = ["dep:serde", "bitflags/serde", "ipkt-core/serde"]
+# Enable helpers that need a cryptographic RNG (e.g. generating client
+# challenges and exported session keys). Disable for fully deterministic,
+# no-`rand` builds where you always supply your own nonces.
+rand = ["dep:rand"]
+
+[lints]
+workspace = true

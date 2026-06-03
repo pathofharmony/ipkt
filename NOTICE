@@ -1,0 +1,9 @@
+ipkt
+====
+
+Copyright 2026 The ipkt Authors
+
+Independent Rust implementation of public Windows protocol specifications.
+Product name: **ipkt** (crates and CLI binary).
+
+Third-party Rust libraries are listed via `cargo license`.
