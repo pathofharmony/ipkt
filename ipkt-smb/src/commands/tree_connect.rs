@@ -3,27 +3,24 @@ use ipkt_core::text::encode_utf16le;
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
 bitflags! {
-    
+
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
     pub struct TreeConnectFlags: u16 {
-        
+
         const CLUSTER_RECONNECT = 0x0001;
-        
+
         const REDIRECT_TO_OWNER = 0x0002;
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TreeConnectRequest {
-    
     pub flags: TreeConnectFlags,
-    
+
     pub path: String,
 }
 
 impl TreeConnectRequest {
-    
     #[must_use]
     pub fn new(path: impl Into<String>) -> Self {
         Self {

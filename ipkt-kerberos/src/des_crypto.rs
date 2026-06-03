@@ -8,13 +8,11 @@ use md5::Md5;
 use crate::crypto::n_fold;
 use crate::Result;
 
-
 pub const ETYPE_DES_CBC_MD5: i32 = 3;
 
 pub const ETYPE_DES3_CBC_SHA1: i32 = 7;
 
 pub const ETYPE_DES_CBC_CRC: i32 = 1;
-
 
 pub fn string2key_des(password: &str, salt: &[u8]) -> [u8; 8] {
     let mut material = Vec::new();
@@ -25,7 +23,6 @@ pub fn string2key_des(password: &str, salt: &[u8]) -> [u8; 8] {
     key7.copy_from_slice(&folded[..7]);
     des_key_from_7bytes(key7)
 }
-
 
 pub fn string2key_des3(password: &str, salt: &[u8]) -> [u8; 24] {
     let k1 = string2key_des(password, salt);
@@ -42,7 +39,6 @@ pub fn string2key_des3(password: &str, salt: &[u8]) -> [u8; 24] {
     out
 }
 
-
 pub fn crc32_kerberos(data: &[u8]) -> u32 {
     let mut crc = 0u32;
     for &b in data {
@@ -52,7 +48,6 @@ pub fn crc32_kerberos(data: &[u8]) -> u32 {
     }
     crc
 }
-
 
 pub fn encrypt_des_cbc_crc(key: &[u8; 8], key_usage: u32, plaintext: &[u8]) -> Result<Vec<u8>> {
     let ke = derive_des_key(key, key_usage, 0xAA);
@@ -69,7 +64,6 @@ pub fn encrypt_des_cbc_crc(key: &[u8; 8], key_usage: u32, plaintext: &[u8]) -> R
     Ok(out)
 }
 
-
 pub fn decrypt_des_cbc_crc(key: &[u8; 8], key_usage: u32, cipher: &[u8]) -> Result<Vec<u8>> {
     if cipher.len() < 12 {
         return Err(crate::Error::Crypto("DES-CRC cipher too short".into()));
@@ -83,7 +77,6 @@ pub fn decrypt_des_cbc_crc(key: &[u8; 8], key_usage: u32, cipher: &[u8]) -> Resu
     }
     strip_des_plaintext(&plain)
 }
-
 
 pub fn encrypt_des_cbc_md5(key: &[u8; 8], key_usage: u32, plaintext: &[u8]) -> Result<Vec<u8>> {
     let ke = derive_des_key(key, key_usage, 0xAA);
@@ -101,7 +94,6 @@ pub fn encrypt_des_cbc_md5(key: &[u8; 8], key_usage: u32, plaintext: &[u8]) -> R
     Ok(out)
 }
 
-
 pub fn decrypt_des_cbc_md5(key: &[u8; 8], key_usage: u32, cipher: &[u8]) -> Result<Vec<u8>> {
     if cipher.len() < 24 {
         return Err(crate::Error::Crypto("DES cipher too short".into()));
@@ -116,7 +108,6 @@ pub fn decrypt_des_cbc_md5(key: &[u8; 8], key_usage: u32, cipher: &[u8]) -> Resu
     }
     strip_des_plaintext(&plain)
 }
-
 
 pub fn encrypt_des3_cbc_sha1(key: &[u8; 24], key_usage: u32, plaintext: &[u8]) -> Result<Vec<u8>> {
     use sha1::{Digest, Sha1};
@@ -137,7 +128,6 @@ pub fn encrypt_des3_cbc_sha1(key: &[u8; 24], key_usage: u32, plaintext: &[u8]) -
     out.extend(cipher);
     Ok(out)
 }
-
 
 pub fn decrypt_des3_cbc_sha1(key: &[u8; 24], key_usage: u32, cipher: &[u8]) -> Result<Vec<u8>> {
     use sha1::{Digest, Sha1};

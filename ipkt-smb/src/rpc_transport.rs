@@ -9,9 +9,8 @@ use ipkt_rpc::{
 
 use crate::client::SmbClient;
 use crate::error::Result;
-use crate::pipe::{ipc_unc, pipe_create_path, paths};
+use crate::pipe::{ipc_unc, paths, pipe_create_path};
 use ipkt_rpc::samr_bind_uuids;
-
 
 pub struct SmbRpcTransport {
     file_id: [u8; 16],
@@ -20,12 +19,10 @@ pub struct SmbRpcTransport {
 }
 
 impl SmbRpcTransport {
-    
     pub async fn connect_drsu(client: &mut SmbClient, host: &str) -> Result<Self> {
         Self::connect_pipe(client, host, "drsuapi").await
     }
 
-    
     pub async fn drs_bind(&mut self, client: &mut SmbClient) -> Result<Vec<u8>> {
         let (a, b) = drsu_bind_uuids().map_err(|e| crate::Error::Transport(e.to_string()))?;
         self.bind(client, a, b).await?;
@@ -34,7 +31,6 @@ impl SmbRpcTransport {
             .await
     }
 
-    
     pub async fn drs_domain_controller_info(
         &mut self,
         client: &mut SmbClient,
@@ -49,7 +45,6 @@ impl SmbRpcTransport {
             .await
     }
 
-    
     pub async fn drs_crack_names(
         &mut self,
         client: &mut SmbClient,
@@ -64,7 +59,6 @@ impl SmbRpcTransport {
             .await
     }
 
-    
     #[allow(clippy::too_many_arguments)]
     pub async fn drs_get_nc_changes(
         &mut self,
@@ -94,17 +88,11 @@ impl SmbRpcTransport {
             .await
     }
 
-    
     pub async fn connect_samr(client: &mut SmbClient, host: &str) -> Result<Self> {
         Self::connect_pipe(client, host, paths::SAMR).await
     }
 
-    
-    pub async fn connect_pipe(
-        client: &mut SmbClient,
-        host: &str,
-        pipe: &str,
-    ) -> Result<Self> {
+    pub async fn connect_pipe(client: &mut SmbClient, host: &str, pipe: &str) -> Result<Self> {
         client.tree_connect(&ipc_unc(host)).await?;
         let path = pipe_create_path(pipe);
         let file_id = client.create(&path).await?;
@@ -115,7 +103,6 @@ impl SmbRpcTransport {
         })
     }
 
-    
     pub async fn bind(
         &mut self,
         client: &mut SmbClient,
@@ -138,15 +125,18 @@ impl SmbRpcTransport {
         client.pipe_transact(self.file_id, msg.pack()).await
     }
 
-    
     pub async fn bind_samr(&mut self, client: &mut SmbClient) -> Result<Vec<u8>> {
-        let (abstract_syntax, transfer_syntax) = samr_bind_uuids()
-            .map_err(|e| crate::Error::Transport(e.to_string()))?;
+        let (abstract_syntax, transfer_syntax) =
+            samr_bind_uuids().map_err(|e| crate::Error::Transport(e.to_string()))?;
         self.bind(client, abstract_syntax, transfer_syntax).await
     }
 
-    
-    pub async fn request(&mut self, client: &mut SmbClient, opnum: u16, stub: Vec<u8>) -> Result<Vec<u8>> {
+    pub async fn request(
+        &mut self,
+        client: &mut SmbClient,
+        opnum: u16,
+        stub: Vec<u8>,
+    ) -> Result<Vec<u8>> {
         let body = RequestPdu {
             alloc_hint: stub.len() as u32,
             context_id: 0,
@@ -161,13 +151,11 @@ impl SmbRpcTransport {
         client.pipe_transact(self.file_id, msg.pack()).await
     }
 
-    
     #[must_use]
     pub fn file_id(&self) -> [u8; 16] {
         self.file_id
     }
 
-    
     pub async fn samr_connect(
         &mut self,
         client: &mut SmbClient,
@@ -175,11 +163,15 @@ impl SmbRpcTransport {
     ) -> Result<SamrConnectResponse> {
         let msg = samr_connect_request(None, access_mask);
         let raw = client.pipe_transact(self.file_id, msg.pack()).await?;
-        let (_hdr, parsed) = parse_rpc_pdu(&raw).map_err(|e| crate::Error::Transport(e.to_string()))?;
+        let (_hdr, parsed) =
+            parse_rpc_pdu(&raw).map_err(|e| crate::Error::Transport(e.to_string()))?;
         let stub = match parsed {
             ParsedRpcPdu::Response(r) => r.stub,
             ParsedRpcPdu::Fault(f) => {
-                return Err(crate::Error::Transport(format!("RPC fault {:#x}", f.status)));
+                return Err(crate::Error::Transport(format!(
+                    "RPC fault {:#x}",
+                    f.status
+                )));
             }
             other => {
                 return Err(crate::Error::Transport(format!(
@@ -191,7 +183,6 @@ impl SmbRpcTransport {
             .ok_or_else(|| crate::Error::Transport("invalid SamrConnect stub".into()))
     }
 
-    
     #[must_use]
     pub fn pipe_name(&self) -> &str {
         &self.pipe_name

@@ -8,19 +8,17 @@ use ipkt::rpc::{
 };
 use ipkt::smb::{SmbClient, SmbRpcTransport};
 
-
 pub struct ReplExportOptions {
     pub host: String,
     pub port: u16,
     pub domain: String,
     pub user: String,
     pub password: String,
-    
+
     pub try_drsu: bool,
-    
+
     pub target_user: Option<String>,
 }
-
 
 pub async fn run_repl_export(opts: ReplExportOptions) -> Result<(), Box<dyn std::error::Error>> {
     let mut client = SmbClient::connect(&opts.host, opts.port).await?;
@@ -42,8 +40,7 @@ pub async fn run_repl_export(opts: ReplExportOptions) -> Result<(), Box<dyn std:
             samr_connect_request(None, 0x000F003F).pack(),
         )
         .await?;
-    let server = parse_samr_connect_response(&connect_resp)
-        .ok_or("SamrConnect failed to parse")?;
+    let server = parse_samr_connect_response(&connect_resp).ok_or("SamrConnect failed to parse")?;
     if server.status != 0 {
         println!("[!] SamrConnect status={:#x}", server.status);
     } else {

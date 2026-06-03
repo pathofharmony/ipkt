@@ -10,13 +10,11 @@ use crate::Result;
 const HASH_SIZE: usize = 12;
 const BLOCK: usize = 16;
 
-
 pub const KEY_USAGE_PA_ENC_TIMESTAMP: u32 = 1;
 
 pub const KEY_USAGE_AS_REP_ENC_PART: u32 = 3;
 
 pub const KEY_USAGE_TGS_REP_ENC_PART: u32 = 8;
-
 
 pub fn string2key_aes256(password: &str, salt: &[u8], iter_count: u32) -> Result<[u8; 32]> {
     let mut tkey = [0u8; 32];
@@ -24,7 +22,6 @@ pub fn string2key_aes256(password: &str, salt: &[u8], iter_count: u32) -> Result
         .map_err(|e| crate::Error::Crypto(e.to_string()))?;
     dk_aes256(&tkey, b"kerberos")
 }
-
 
 pub fn encrypt_aes256(
     base_key: &[u8; 32],
@@ -49,12 +46,7 @@ pub fn encrypt_aes256(
     Ok(out)
 }
 
-
-pub fn decrypt_aes256(
-    base_key: &[u8; 32],
-    key_usage: u32,
-    cipher: &[u8],
-) -> Result<Vec<u8>> {
+pub fn decrypt_aes256(base_key: &[u8; 32], key_usage: u32, cipher: &[u8]) -> Result<Vec<u8>> {
     if cipher.len() < BLOCK + HASH_SIZE {
         return Err(crate::Error::Crypto("ciphertext too short".into()));
     }

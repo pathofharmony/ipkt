@@ -1,7 +1,5 @@
 #![allow(missing_docs)]
-use ipkt_smb::{
-    decrypt_message, encrypt_message, derive_encryption_key, preauth_hash_sha512,
-};
+use ipkt_smb::{decrypt_message, derive_encryption_key, encrypt_message, preauth_hash_sha512};
 
 #[test]
 fn smb3_transform_roundtrip() {

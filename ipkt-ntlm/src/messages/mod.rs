@@ -10,22 +10,13 @@ use ipkt_core::ByteReader;
 
 use crate::error::{Error, Result};
 
-
 pub const NTLMSSP_SIGNATURE: [u8; 8] = *b"NTLMSSP\0";
-
 
 pub const MESSAGE_TYPE_NEGOTIATE: u32 = 1;
 
 pub const MESSAGE_TYPE_CHALLENGE: u32 = 2;
 
 pub const MESSAGE_TYPE_AUTHENTICATE: u32 = 3;
-
-
-
-
-
-
-
 
 pub(crate) fn read_header(reader: &mut ByteReader<'_>, expected: u32) -> Result<()> {
     let signature = reader.read_array::<8>()?;

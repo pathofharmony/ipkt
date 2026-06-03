@@ -6,13 +6,11 @@ pub const ATTID_USER_PRINCIPAL_NAME: u32 = 590_480;
 
 pub const ATTID_PEK_LIST: u32 = 589_921;
 
-
 pub const OID_UNICODE_PWD: &str = "1.2.840.113556.1.4.90";
 pub const OID_DBCS_PWD: &str = "1.2.840.113556.1.4.55";
 pub const OID_SAM_ACCOUNT_NAME: &str = "1.2.840.113556.1.4.221";
 pub const OID_OBJECT_SID: &str = "1.2.840.113556.1.4.146";
 pub const OID_USER_PRINCIPAL_NAME: &str = "1.2.840.113556.1.4.656";
-
 
 pub const DEFAULT_REPL_ATTIDS: &[(&str, u32)] = &[
     (OID_UNICODE_PWD, ATTID_UNICODE_PWD),
@@ -22,13 +20,11 @@ pub const DEFAULT_REPL_ATTIDS: &[(&str, u32)] = &[
     (OID_USER_PRINCIPAL_NAME, ATTID_USER_PRINCIPAL_NAME),
 ];
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PrefixEntry {
     pub ndx: u32,
     pub prefix: Vec<u8>,
 }
-
 
 #[derive(Debug, Default, Clone)]
 pub struct PrefixTable {
@@ -36,12 +32,10 @@ pub struct PrefixTable {
 }
 
 impl PrefixTable {
-    
     pub fn replace_entries(&mut self, entries: Vec<PrefixEntry>) {
         self.entries = entries;
     }
 
-    
     pub fn default_repl_attr_typs(&mut self) -> Vec<u32> {
         DEFAULT_REPL_ATTIDS
             .iter()
@@ -49,19 +43,14 @@ impl PrefixTable {
             .collect()
     }
 
-    
     pub fn resolve_attid(&self, attr_typ: u32) -> u32 {
         oid_from_attid(self, attr_typ).unwrap_or(attr_typ)
     }
 }
 
-
 #[must_use]
 pub fn ber_oid_body(oid: &str) -> Vec<u8> {
-    let nums: Vec<u32> = oid
-        .split('.')
-        .filter_map(|p| p.parse().ok())
-        .collect();
+    let nums: Vec<u32> = oid.split('.').filter_map(|p| p.parse().ok()).collect();
     if nums.len() < 2 {
         return Vec::new();
     }
@@ -90,9 +79,12 @@ fn encode_base128(mut value: u32, out: &mut Vec<u8>) {
     }
 }
 
-
 pub fn make_attid(table: &mut PrefixTable, oid: &str) -> u32 {
-    let last_value: u32 = oid.rsplit('.').next().and_then(|s| s.parse().ok()).unwrap_or(0);
+    let last_value: u32 = oid
+        .rsplit('.')
+        .next()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
     let binary = ber_oid_body(oid);
     let oid_prefix = if last_value < 128 {
         binary[..binary.len().saturating_sub(1)].to_vec()
@@ -120,7 +112,6 @@ pub fn make_attid(table: &mut PrefixTable, oid: &str) -> u32 {
     }
     (pos << 16) | lower
 }
-
 
 pub fn oid_from_attid(table: &PrefixTable, attr_typ: u32) -> Option<u32> {
     let upper = attr_typ >> 16;

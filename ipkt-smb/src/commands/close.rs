@@ -1,9 +1,7 @@
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CloseRequest {
-    
     pub file_id: [u8; 16],
 }
 
@@ -11,7 +9,7 @@ impl Pack for CloseRequest {
     fn pack_into(&self, writer: &mut ByteWriter) {
         writer
             .write_u16_le(24)
-            .write_u16_le(1) 
+            .write_u16_le(1)
             .write_u32_le(0)
             .write_bytes(&self.file_id);
     }

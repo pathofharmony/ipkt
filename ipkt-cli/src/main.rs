@@ -2,11 +2,11 @@ mod repl_export;
 
 use clap::{Parser, Subcommand};
 use ipkt::core::Pack;
-use ipkt::kerberos::{
-    build_pa_enc_timestamp, encode_as_req, encode_pa_enc_timestamp, AsReq, KdcReqBody, PrincipalName,
-    Realm, ETYPE_AES256_CTS_HMAC_SHA1_96,
-};
 use ipkt::kerberos::KdcClient;
+use ipkt::kerberos::{
+    build_pa_enc_timestamp, encode_as_req, encode_pa_enc_timestamp, AsReq, KdcReqBody,
+    PrincipalName, Realm, ETYPE_AES256_CTS_HMAC_SHA1_96,
+};
 use ipkt::ldap::{gssapi_kerberos_credentials, LdapClient, SearchRequest};
 use ipkt::ntlm::{channel_bindings_hash, crypto::ntowf_v1, Credentials, NtlmClient};
 use ipkt::smb::SmbClient;
@@ -24,7 +24,6 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    
     NtlmHandshake {
         #[arg(long, default_value = "CONTOSO")]
         domain: String,
@@ -33,7 +32,7 @@ enum Commands {
         #[arg(long, default_value = "password")]
         password: String,
     },
-    
+
     NtlmHash {
         #[arg(long)]
         password: Option<String>,
@@ -42,13 +41,13 @@ enum Commands {
         #[arg(long, help = "TLS cert SHA-256 hex for channel-bindings MD5")]
         cert_sha256: Option<String>,
     },
-    
+
     SmbNegotiate {
         host: String,
         #[arg(long, default_value_t = 445)]
         port: u16,
     },
-    
+
     RpcBindSamr {
         host: String,
         #[arg(long, default_value_t = 445)]
@@ -60,7 +59,7 @@ enum Commands {
         #[arg(long)]
         password: String,
     },
-    
+
     RpcSamrConnect {
         host: String,
         #[arg(long, default_value_t = 445)]
@@ -72,7 +71,7 @@ enum Commands {
         #[arg(long)]
         password: String,
     },
-    
+
     KerberosAsReq {
         #[arg(long, default_value = "EXAMPLE.COM")]
         realm: String,
@@ -81,7 +80,7 @@ enum Commands {
         #[arg(long)]
         password: Option<String>,
     },
-    
+
     KerberosAsExchange {
         kdc: String,
         #[arg(long, default_value_t = 88)]
@@ -93,7 +92,7 @@ enum Commands {
         #[arg(long)]
         password: String,
     },
-    
+
     #[command(name = "repl-export")]
     ReplExport {
         host: String,
@@ -107,10 +106,13 @@ enum Commands {
         password: String,
         #[arg(long, help = "Attempt DRSUAPI DCSync (needs DA)")]
         drsu: bool,
-        #[arg(long, help = "Only this account (DOMAIN\\\\user or user); uses DRSCrackNames + EXOP_REPL_OBJ")]
+        #[arg(
+            long,
+            help = "Only this account (DOMAIN\\\\user or user); uses DRSCrackNames + EXOP_REPL_OBJ"
+        )]
         target_user: Option<String>,
     },
-    
+
     LdapSearch {
         host: String,
         #[arg(long, default_value_t = 389)]
@@ -128,7 +130,10 @@ enum Commands {
             help = "Kerberos AP-REQ DER as hex for SASL GSSAPI bind (instead of simple bind)"
         )]
         gss_ap_req: Option<String>,
-        #[arg(long, help = "Full Kerberos LDAP bind (AS+TGS+AP-REQ/AP-REP); needs --kdc --realm --user --password")]
+        #[arg(
+            long,
+            help = "Full Kerberos LDAP bind (AS+TGS+AP-REQ/AP-REP); needs --kdc --realm --user --password"
+        )]
         kerberos: bool,
         #[arg(long, help = "KDC host for --kerberos")]
         kdc: Option<String>,
@@ -141,7 +146,7 @@ enum Commands {
         #[arg(long, default_value_t = 88)]
         kdc_port: u16,
     },
-    
+
     Info,
 }
 
@@ -218,7 +223,8 @@ async fn run(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             client
                 .authenticate_ntlm(Credentials::new(&domain, &user, &password))
                 .await?;
-            let mut transport = ipkt::smb::SmbRpcTransport::connect_samr(&mut client, &host).await?;
+            let mut transport =
+                ipkt::smb::SmbRpcTransport::connect_samr(&mut client, &host).await?;
             let resp = transport.bind_samr(&mut client).await?;
             println!("SAMR BIND response: {} bytes", resp.len());
         }
@@ -233,7 +239,8 @@ async fn run(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             client
                 .authenticate_ntlm(Credentials::new(&domain, &user, &password))
                 .await?;
-            let mut transport = ipkt::smb::SmbRpcTransport::connect_samr(&mut client, &host).await?;
+            let mut transport =
+                ipkt::smb::SmbRpcTransport::connect_samr(&mut client, &host).await?;
             transport.bind_samr(&mut client).await?;
             let connect = transport.samr_connect(&mut client, 0x000F003F).await?;
             println!(
@@ -327,9 +334,15 @@ async fn run(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             let mut ldap = LdapClient::connect(&host, port).await?;
             let bind = if kerberos {
                 let kdc_host = kdc.as_deref().ok_or("--kdc required with --kerberos")?;
-                let realm = krb_realm.as_deref().ok_or("--krb-realm required with --kerberos")?;
-                let user = krb_user.as_deref().ok_or("--krb-user required with --kerberos")?;
-                let pw = krb_password.as_deref().ok_or("--krb-password required with --kerberos")?;
+                let realm = krb_realm
+                    .as_deref()
+                    .ok_or("--krb-realm required with --kerberos")?;
+                let user = krb_user
+                    .as_deref()
+                    .ok_or("--krb-user required with --kerberos")?;
+                let pw = krb_password
+                    .as_deref()
+                    .ok_or("--krb-password required with --kerberos")?;
                 println!("[*] Kerberos AS+TGS for ldap/{host} via {kdc_host}:{kdc_port}");
                 let kdc_client = KdcClient::new(kdc_host, kdc_port);
                 let tokens = kdc_client.ldap_tokens(realm, user, pw, &host).await?;

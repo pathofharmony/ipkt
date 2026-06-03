@@ -2,43 +2,35 @@ const OID_SPNEGO: &[u8] = &[0x2b, 0x06, 0x01, 0x05, 0x05, 0x02];
 
 const OID_KRB5: &[u8] = &[0x2a, 0x86, 0x48, 0x86, 0xf7, 0x12, 0x01, 0x02, 0x02];
 
-
 #[must_use]
 pub fn neg_token_init_spnego() -> Vec<u8> {
-    
-    vec![
-        0x60, 0x06, 0x06, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x02,
-    ]
+    vec![0x60, 0x06, 0x06, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x02]
 }
-
 
 #[must_use]
 pub fn neg_token_init_kerberos(ap_req: &[u8]) -> Vec<u8> {
     let mech_list = encode_sequence(&[encode_oid(OID_KRB5)]);
     let mech_token = encode_context0_octet_string(ap_req);
-    let neg_token = encode_sequence(&[
-        encode_context0(&mech_list),
-        encode_context2(&mech_token),
+    let neg_token = encode_sequence(&[encode_context0(&mech_list), encode_context2(&mech_token)]);
+    let app_choice = encode_sequence(&[
+        encode_context0(&encode_oid(OID_SPNEGO)),
+        encode_context1(&neg_token),
     ]);
-    let app_choice = encode_sequence(&[encode_context0(&encode_oid(OID_SPNEGO)), encode_context1(&neg_token)]);
     let mut out = vec![0x60];
     out.extend(encode_length(app_choice.len()));
     out.extend(app_choice);
     out
 }
 
-
 #[must_use]
 pub fn gssapi_sasl_credentials() -> Vec<u8> {
     neg_token_init_spnego()
 }
 
-
 #[must_use]
 pub fn gssapi_kerberos_credentials(ap_req: &[u8]) -> Vec<u8> {
     neg_token_init_kerberos(ap_req)
 }
-
 
 #[must_use]
 pub fn neg_token_resp_kerberos(ap_rep: &[u8]) -> Vec<u8> {
@@ -51,26 +43,22 @@ pub fn neg_token_resp_kerberos(ap_rep: &[u8]) -> Vec<u8> {
     out
 }
 
-
 #[must_use]
 pub fn gssapi_kerberos_response(ap_rep: &[u8]) -> Vec<u8> {
     neg_token_resp_kerberos(ap_rep)
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NegTokenTarg {
-    
     pub neg_result: Option<u8>,
-    
+
     pub response_token: Option<Vec<u8>>,
 }
 
-
 pub fn parse_neg_token_targ(spnego: &[u8]) -> Option<NegTokenTarg> {
     let neg_result = find_context_tag_enum(spnego, 0xA0);
-    let response_token = find_context_tag_octets(spnego, 0xA2)
-        .or_else(|| find_application_token(spnego, 0x6e));
+    let response_token =
+        find_context_tag_octets(spnego, 0xA2).or_else(|| find_application_token(spnego, 0x6e));
     if neg_result.is_none() && response_token.is_none() {
         return None;
     }
@@ -79,7 +67,6 @@ pub fn parse_neg_token_targ(spnego: &[u8]) -> Option<NegTokenTarg> {
         response_token,
     })
 }
-
 
 pub fn extract_krb5_token_from_neg_token(spnego: &[u8]) -> Option<Vec<u8>> {
     parse_neg_token_targ(spnego)
@@ -158,7 +145,6 @@ fn encode_context2_octet_string(data: &[u8]) -> Vec<u8> {
     oct.extend_from_slice(data);
     encode_context2(&oct)
 }
-
 
 fn extract_octet_string(data: &[u8]) -> Option<Vec<u8>> {
     if data.first() == Some(&0x04) {

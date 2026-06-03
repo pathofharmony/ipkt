@@ -7,20 +7,9 @@ use md5::{Digest, Md5};
 
 use ipkt_core::text::encode_utf16le;
 
-
 pub type Challenge = [u8; 8];
 
-
-
 const LM_MAGIC: [u8; 8] = *b"KGS!@#$%";
-
-
-
-
-
-
-
-
 
 #[must_use]
 pub fn md4(data: &[u8]) -> [u8; 16] {
@@ -29,7 +18,6 @@ pub fn md4(data: &[u8]) -> [u8; 16] {
     hasher.finalize().into()
 }
 
-
 #[must_use]
 pub fn md5(data: &[u8]) -> [u8; 16] {
     let mut hasher = Md5::new();
@@ -37,26 +25,15 @@ pub fn md5(data: &[u8]) -> [u8; 16] {
     hasher.finalize().into()
 }
 
-
-
 #[must_use]
 pub fn hmac_md5(key: &[u8], data: &[u8]) -> [u8; 16] {
-    
-    
     let mut mac = <Hmac<Md5> as Mac>::new_from_slice(key).expect("HMAC accepts any key length");
     mac.update(data);
     mac.finalize().into_bytes().into()
 }
 
-
-
-
-
-
 #[must_use]
 pub fn rc4(key: &[u8], data: &[u8]) -> Vec<u8> {
-    
-    
     let mut state: [u8; 256] = core::array::from_fn(|i| i as u8);
     let mut j: u8 = 0;
     for i in 0..256usize {
@@ -76,13 +53,6 @@ pub fn rc4(key: &[u8], data: &[u8]) -> Vec<u8> {
     out
 }
 
-
-
-
-
-
-
-
 fn des_key_from_56(key7: &[u8; 7]) -> [u8; 8] {
     let mut out = [0u8; 8];
     out[0] = key7[0];
@@ -96,8 +66,6 @@ fn des_key_from_56(key7: &[u8; 7]) -> [u8; 8] {
     out
 }
 
-
-
 fn des_encrypt(key56: &[u8; 7], block: &[u8; 8]) -> [u8; 8] {
     let key = des_key_from_56(key56);
     let cipher = Des::new(GenericArray::from_slice(&key));
@@ -105,9 +73,6 @@ fn des_encrypt(key56: &[u8; 7], block: &[u8; 8]) -> [u8; 8] {
     cipher.encrypt_block(&mut buf);
     buf.into()
 }
-
-
-
 
 #[must_use]
 pub fn desl(key: &[u8; 16], data: &Challenge) -> [u8; 24] {
@@ -124,33 +89,10 @@ pub fn desl(key: &[u8; 16], data: &Challenge) -> [u8; 24] {
     out
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #[must_use]
 pub fn ntowf_v1(password: &str) -> [u8; 16] {
     md4(&encode_utf16le(password))
 }
-
-
-
-
-
-
 
 #[must_use]
 pub fn lmowf_v1(password: &str) -> [u8; 16] {
@@ -160,7 +102,6 @@ pub fn lmowf_v1(password: &str) -> [u8; 16] {
         .iter_mut()
         .zip(upper.bytes().chain(core::iter::repeat(0)))
     {
-        
         *slot = if ch < 0x80 { ch } else { b'?' };
     }
 
@@ -172,54 +113,31 @@ pub fn lmowf_v1(password: &str) -> [u8; 16] {
     out
 }
 
-
-
-
-
-
 #[must_use]
 pub fn ntowf_v2_from_nt_hash(nt_hash: &[u8; 16], user: &str, domain: &str) -> [u8; 16] {
     let identity = format!("{}{}", user.to_uppercase(), domain);
     hmac_md5(nt_hash, &encode_utf16le(&identity))
 }
 
-
-
-
-
-
 #[must_use]
 pub fn ntowf_v2(password: &str, user: &str, domain: &str) -> [u8; 16] {
     ntowf_v2_from_nt_hash(&ntowf_v1(password), user, domain)
 }
-
 
 #[must_use]
 pub fn lmowf_v2(password: &str, user: &str, domain: &str) -> [u8; 16] {
     ntowf_v2(password, user, domain)
 }
 
-
-
-
-
-
 #[must_use]
 pub fn ntlm_v1_response(nt_hash: &[u8; 16], server_challenge: &Challenge) -> [u8; 24] {
     desl(nt_hash, server_challenge)
 }
 
-
 #[must_use]
 pub fn lm_v1_response(lm_hash: &[u8; 16], server_challenge: &Challenge) -> [u8; 24] {
     desl(lm_hash, server_challenge)
 }
-
-
-
-
-
-
 
 #[must_use]
 pub fn ntlm_v1_extended_response(
@@ -241,43 +159,31 @@ pub fn ntlm_v1_extended_response(
     (lm_response, nt_response)
 }
 
-
 #[must_use]
 pub fn ntlm_v1_session_base_key(nt_hash: &[u8; 16]) -> [u8; 16] {
     md4(nt_hash)
 }
 
-
-
-
-
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ntlmv2Response {
-    
     proof: [u8; 16],
-    
-    
+
     temp: Vec<u8>,
-    
+
     session_base_key: [u8; 16],
 }
 
 impl Ntlmv2Response {
-    
     #[must_use]
     pub fn proof(&self) -> [u8; 16] {
         self.proof
     }
 
-    
     #[must_use]
     pub fn session_base_key(&self) -> [u8; 16] {
         self.session_base_key
     }
 
-    
-    
     #[must_use]
     pub fn nt_challenge_response(&self) -> Vec<u8> {
         let mut out = Vec::with_capacity(16 + self.temp.len());
@@ -287,33 +193,19 @@ impl Ntlmv2Response {
     }
 }
 
-
-
-
-
-
-
 #[must_use]
 fn ntlm_v2_temp(timestamp: u64, client_challenge: &Challenge, target_info: &[u8]) -> Vec<u8> {
     let mut temp = Vec::with_capacity(28 + target_info.len() + 4);
-    temp.push(0x01); 
-    temp.push(0x01); 
-    temp.extend_from_slice(&[0u8; 6]); 
+    temp.push(0x01);
+    temp.push(0x01);
+    temp.extend_from_slice(&[0u8; 6]);
     temp.extend_from_slice(&timestamp.to_le_bytes());
     temp.extend_from_slice(client_challenge);
-    temp.extend_from_slice(&[0u8; 4]); 
+    temp.extend_from_slice(&[0u8; 4]);
     temp.extend_from_slice(target_info);
-    temp.extend_from_slice(&[0u8; 4]); 
+    temp.extend_from_slice(&[0u8; 4]);
     temp
 }
-
-
-
-
-
-
-
-
 
 #[must_use]
 pub fn ntlm_v2_response(
@@ -325,13 +217,11 @@ pub fn ntlm_v2_response(
 ) -> Ntlmv2Response {
     let temp = ntlm_v2_temp(timestamp, client_challenge, target_info);
 
-    
     let mut proof_input = Vec::with_capacity(8 + temp.len());
     proof_input.extend_from_slice(server_challenge);
     proof_input.extend_from_slice(&temp);
     let proof = hmac_md5(response_key, &proof_input);
 
-    
     let session_base_key = hmac_md5(response_key, &proof);
 
     Ntlmv2Response {
@@ -340,8 +230,6 @@ pub fn ntlm_v2_response(
         session_base_key,
     }
 }
-
-
 
 #[must_use]
 pub fn lm_v2_response(
@@ -360,28 +248,18 @@ pub fn lm_v2_response(
     out
 }
 
-
-
-
-
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum SessionKeyMode {
-    
     Client,
-    
+
     Server,
 }
-
-
 
 #[must_use]
 pub fn key_exchange_key_ntlmv2(session_base_key: &[u8; 16]) -> [u8; 16] {
     *session_base_key
 }
-
-
 
 #[must_use]
 pub fn key_exchange_key_ntlmv1_extended(
@@ -397,15 +275,10 @@ pub fn key_exchange_key_ntlmv1_extended(
     hmac_md5(session_base_key, &input)
 }
 
-
 #[must_use]
 pub fn key_exchange_key_ntlmv1(session_base_key: &[u8; 16]) -> [u8; 16] {
     *session_base_key
 }
-
-
-
-
 
 #[must_use]
 pub fn sign_key(
@@ -425,7 +298,6 @@ pub fn sign_key(
     input.extend_from_slice(magic);
     Some(md5(&input))
 }
-
 
 #[must_use]
 pub fn seal_key(
@@ -455,7 +327,6 @@ pub fn seal_key(
         return md5(&input);
     }
 
-    
     if flags.contains(crate::NegotiateFlags::NEGOTIATE_56) {
         let mut key = [0u8; 16];
         key[..7].copy_from_slice(&exported_session_key[..7]);
@@ -471,9 +342,6 @@ pub fn seal_key(
     }
 }
 
-
-
-
 #[must_use]
 pub fn seal_exported_session_key(
     key_exchange_key: &[u8; 16],
@@ -484,9 +352,6 @@ pub fn seal_exported_session_key(
     out.copy_from_slice(&wrapped);
     out
 }
-
-
-
 
 #[must_use]
 pub fn mic(
@@ -503,11 +368,6 @@ pub fn mic(
     input.extend_from_slice(authenticate_message);
     hmac_md5(exported_session_key, &input)
 }
-
-
-
-
-
 
 #[must_use]
 pub fn channel_bindings_hash(cert_hash: &[u8]) -> [u8; 16] {

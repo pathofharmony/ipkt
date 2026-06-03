@@ -1,6 +1,5 @@
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct OrpcThis {
     pub flags: u32,

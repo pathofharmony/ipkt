@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 use ipkt_kerberos::{
-    decrypt_aes256, encrypt_aes256, aes_string2key as string2key_aes256, KEY_USAGE_PA_ENC_TIMESTAMP,
+    aes_string2key as string2key_aes256, decrypt_aes256, encrypt_aes256, KEY_USAGE_PA_ENC_TIMESTAMP,
 };
 
 #[test]

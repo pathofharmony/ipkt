@@ -1,32 +1,27 @@
 use ipkt_core::text::encode_utf16le;
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct FileAttributes(pub u32);
 
 impl FileAttributes {
-    
     pub const NORMAL: Self = Self(0x80);
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreateRequest {
-    
     pub desired_access: u32,
-    
+
     pub file_attributes: FileAttributes,
-    
+
     pub name: String,
 }
 
 impl CreateRequest {
-    
     #[must_use]
     pub fn open(name: impl Into<String>) -> Self {
         Self {
-            desired_access: 0x0012_0089, 
+            desired_access: 0x0012_0089,
             file_attributes: FileAttributes::NORMAL,
             name: name.into(),
         }
@@ -39,17 +34,17 @@ impl Pack for CreateRequest {
         let offset = 64 + 56;
         writer
             .write_u16_le(57)
-            .write_u8(0) 
+            .write_u8(0)
             .write_u8(0)
             .write_u32_le(self.desired_access)
-            .write_u32_le(0) 
+            .write_u32_le(0)
             .write_u32_le(self.file_attributes.0)
-            .write_u32_le(0) 
-            .write_u32_le(1) 
-            .write_u32_le(0) 
+            .write_u32_le(0)
+            .write_u32_le(1)
+            .write_u32_le(0)
             .write_u16_le(offset as u16)
             .write_u16_le(name_bytes.len() as u16)
-            .write_u32_le(0) 
+            .write_u32_le(0)
             .write_u32_le(0);
         writer.write_bytes(&name_bytes);
     }

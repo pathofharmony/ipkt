@@ -7,47 +7,35 @@ use crate::version::Version;
 
 use super::{encode_oem, read_header, MESSAGE_TYPE_AUTHENTICATE};
 
-
-
 const HEADER_BASE: usize = 64;
-
-
-
 
 pub const MIC_OFFSET: usize = HEADER_BASE + Version::SIZE;
 
-
 pub const MIC_LEN: usize = 16;
-
-
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AuthenticateMessage {
-    
     pub flags: NegotiateFlags,
-    
+
     pub lm_challenge_response: Vec<u8>,
-    
+
     pub nt_challenge_response: Vec<u8>,
-    
+
     pub domain: Option<String>,
-    
+
     pub user: Option<String>,
-    
+
     pub workstation: Option<String>,
-    
+
     pub encrypted_session_key: Option<Vec<u8>>,
-    
+
     pub version: Option<Version>,
-    
+
     pub mic: Option<[u8; MIC_LEN]>,
 }
 
 impl AuthenticateMessage {
-    
-    
     #[must_use]
     pub fn new(
         flags: NegotiateFlags,
@@ -67,7 +55,6 @@ impl AuthenticateMessage {
         }
     }
 
-    
     #[must_use]
     pub fn with_identity(mut self, domain: impl Into<String>, user: impl Into<String>) -> Self {
         self.domain = Some(domain.into());
@@ -75,22 +62,18 @@ impl AuthenticateMessage {
         self
     }
 
-    
     #[must_use]
     pub fn with_workstation(mut self, workstation: impl Into<String>) -> Self {
         self.workstation = Some(workstation.into());
         self
     }
 
-    
     #[must_use]
     pub fn with_encrypted_session_key(mut self, key: impl Into<Vec<u8>>) -> Self {
         self.encrypted_session_key = Some(key.into());
         self
     }
 
-    
-    
     #[must_use]
     pub fn with_version(mut self, version: Version) -> Self {
         self.version = Some(version);
@@ -98,10 +81,6 @@ impl AuthenticateMessage {
         self
     }
 
-    
-    
-    
-    
     #[must_use]
     pub fn with_mic_placeholder(mut self) -> Self {
         self.ensure_version();
@@ -109,14 +88,11 @@ impl AuthenticateMessage {
         self
     }
 
-    
     pub fn set_mic(&mut self, mic: [u8; MIC_LEN]) {
         self.ensure_version();
         self.mic = Some(mic);
     }
 
-    
-    
     fn ensure_version(&mut self) {
         if self.version.is_none() {
             self.version = Some(Version::default());
@@ -124,8 +100,6 @@ impl AuthenticateMessage {
         self.flags |= NegotiateFlags::NEGOTIATE_VERSION;
     }
 
-    
-    
     fn includes_version(&self) -> bool {
         self.version.is_some() || self.mic.is_some()
     }

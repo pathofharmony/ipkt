@@ -1,16 +1,12 @@
 use crate::crypto::ntowf_v1;
 
-
-
 #[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Secret {
-    
     Password(String),
-    
+
     NtHash([u8; 16]),
 }
-
 
 impl core::fmt::Debug for Secret {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {

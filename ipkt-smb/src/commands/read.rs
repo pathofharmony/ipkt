@@ -1,13 +1,11 @@
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReadRequest {
-    
     pub file_id: [u8; 16],
-    
+
     pub offset: u64,
-    
+
     pub length: u32,
 }
 
@@ -20,8 +18,8 @@ impl Pack for ReadRequest {
             .write_u32_le(self.length)
             .write_u64_le(self.offset)
             .write_bytes(&self.file_id)
-            .write_u32_le(0) 
-            .write_u32_le(0) 
+            .write_u32_le(0)
+            .write_u32_le(0)
             .write_u32_le(0)
             .write_u16_le(0)
             .write_u16_le(0);

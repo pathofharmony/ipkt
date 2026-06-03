@@ -1,13 +1,11 @@
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteRequest {
-    
     pub file_id: [u8; 16],
-    
+
     pub offset: u64,
-    
+
     pub data: Vec<u8>,
 }
 
@@ -15,7 +13,7 @@ impl Pack for WriteRequest {
     fn pack_into(&self, writer: &mut ByteWriter) {
         writer
             .write_u16_le(49)
-            .write_u16_le(0) 
+            .write_u16_le(0)
             .write_u32_le(self.data.len() as u32)
             .write_u64_le(self.offset)
             .write_bytes(&self.file_id)

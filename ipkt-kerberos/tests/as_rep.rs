@@ -1,7 +1,5 @@
 #![allow(missing_docs)]
-use ipkt_kerberos::{
-    decode_as_rep, encode_as_rep, AsRep, PrincipalName, Realm,
-};
+use ipkt_kerberos::{decode_as_rep, encode_as_rep, AsRep, PrincipalName, Realm};
 
 #[test]
 fn as_rep_encode_decode_subset() {

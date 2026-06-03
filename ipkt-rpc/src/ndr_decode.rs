@@ -1,6 +1,5 @@
 use crate::prefix_table::{PrefixEntry, PrefixTable};
 
-
 #[derive(Debug)]
 pub struct NdrDecoder<'a> {
     data: &'a [u8],
@@ -51,7 +50,11 @@ impl<'a> NdrDecoder<'a> {
 
     pub fn read_ptr(&mut self) -> Option<u32> {
         let p = self.read_u32()?;
-        if p == 0 { None } else { Some(p) }
+        if p == 0 {
+            None
+        } else {
+            Some(p)
+        }
     }
 
     pub fn read_uuid(&mut self) -> Option<[u8; 16]> {
@@ -86,7 +89,6 @@ impl<'a> NdrDecoder<'a> {
         }
     }
 
-    
     pub fn read_conformant_u32_array(&mut self) -> Option<Vec<u32>> {
         let _max = self.read_u32()?;
         let offset = self.read_u32()?;
@@ -102,7 +104,6 @@ impl<'a> NdrDecoder<'a> {
         Some(out)
     }
 
-    
     pub fn read_conformant_octets(&mut self) -> Option<Vec<u8>> {
         let _max = self.read_u32()?;
         let offset = self.read_u32()?;
@@ -120,7 +121,6 @@ impl<'a> NdrDecoder<'a> {
         Some(out)
     }
 
-    
     pub fn read_conformant_utf16(&mut self) -> Option<String> {
         let max = self.read_u32()?;
         let offset = self.read_u32()?;
@@ -143,7 +143,6 @@ impl<'a> NdrDecoder<'a> {
     }
 }
 
-
 #[allow(dead_code)]
 pub fn scan_prefix_table(stub: &[u8]) -> PrefixTable {
     let mut table = PrefixTable::default();
@@ -157,8 +156,8 @@ pub fn scan_prefix_table(stub: &[u8]) -> PrefixTable {
                 if at + 12 > stub.len() {
                     break;
                 }
-                let plen = u32::from_le_bytes(stub[at + 4..at + 8].try_into().unwrap_or([0; 4]))
-                    as usize;
+                let plen =
+                    u32::from_le_bytes(stub[at + 4..at + 8].try_into().unwrap_or([0; 4])) as usize;
                 at += 8;
                 if plen > 0 && plen < 32 && at + plen <= stub.len() {
                     entries.push(PrefixEntry {
@@ -178,7 +177,6 @@ pub fn scan_prefix_table(stub: &[u8]) -> PrefixTable {
     }
     table
 }
-
 
 pub fn rid_from_sid(sid: &[u8]) -> Option<u32> {
     if sid.len() < 12 || sid[0] != 1 {

@@ -1,16 +1,13 @@
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SessionSetupRequest {
-    
     pub flags: u8,
-    
+
     pub security_buffer: Vec<u8>,
 }
 
 impl SessionSetupRequest {
-    
     #[must_use]
     pub fn with_security_buffer(buffer: Vec<u8>) -> Self {
         Self {
@@ -22,16 +19,16 @@ impl SessionSetupRequest {
 
 impl Pack for SessionSetupRequest {
     fn pack_into(&self, writer: &mut ByteWriter) {
-        let offset = 64 + 24; 
+        let offset = 64 + 24;
         writer
             .write_u16_le(25)
             .write_u8(self.flags)
-            .write_u8(0) 
-            .write_u32_le(0) 
-            .write_u32_le(0) 
-            .write_u16_le(0) 
+            .write_u8(0)
+            .write_u32_le(0)
+            .write_u32_le(0)
             .write_u16_le(0)
-            .write_u64_le(0); 
+            .write_u16_le(0)
+            .write_u64_le(0);
         let off = writer.len();
         writer.patch(off - 12, &(offset as u16).to_le_bytes());
         writer.patch(off - 10, &(self.security_buffer.len() as u16).to_le_bytes());
@@ -90,7 +87,7 @@ impl Unpack for SessionSetupResponse {
         let message = reader.buffer();
         let mut at = ByteReader::new(message).at(sec_offset)?;
         let security_buffer = at.read_bytes(sec_len)?.to_vec();
-        
+
         Ok(Self {
             session_id: 0,
             security_buffer,

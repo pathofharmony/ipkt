@@ -7,16 +7,15 @@ use crate::enc_kdc::{
     extract_and_verify_pac_from_tgs_rep, session_key_from_as_rep, session_key_from_tgs_rep,
 };
 use crate::krb_error::try_decode_krb_error;
-use crate::pac::Pac;
 use crate::messages::{
     decode_as_rep, decode_tgs_rep, encode_as_req_with_padata, encode_tgs_req_with_padata, AsRep,
     AsReq, KdcReqBody, TgsReq,
 };
 use crate::pa_data::{build_pa_enc_timestamp, encode_pa_enc_timestamp, encode_pa_pac_request};
+use crate::pac::Pac;
 use crate::session_key::{default_enctype_list, KerberosSessionKey};
 use crate::types::{PrincipalName, Realm};
 use crate::Result;
-
 
 #[derive(Debug, Clone)]
 pub struct AsExchange {
@@ -24,23 +23,20 @@ pub struct AsExchange {
     pub session_key: KerberosSessionKey,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct TgsExchange {
     pub tgs_rep: crate::messages::TgsRep,
     pub service_session_key: KerberosSessionKey,
     pub ticket: Vec<u8>,
-    
+
     pub pac: Option<Pac>,
 }
-
 
 #[derive(Debug, Clone)]
 pub struct LdapKerberosTokens {
     pub ap_req: Vec<u8>,
     pub service_session_key: KerberosSessionKey,
 }
-
 
 pub struct KdcClient {
     kdc_addr: String,
@@ -53,12 +49,7 @@ impl KdcClient {
         }
     }
 
-    pub async fn as_exchange(
-        &self,
-        realm: &str,
-        user: &str,
-        password: &str,
-    ) -> Result<AsExchange> {
+    pub async fn as_exchange(&self, realm: &str, user: &str, password: &str) -> Result<AsExchange> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default();
@@ -123,8 +114,7 @@ impl KdcClient {
         let resp = self.send_recv(&der).await?;
         check_kdc_error(&resp)?;
         let tgs_rep = decode_tgs_rep(&resp)?;
-        let service_session_key =
-            session_key_from_tgs_rep(&tgt.session_key, &tgs_rep.enc_part)?;
+        let service_session_key = session_key_from_tgs_rep(&tgt.session_key, &tgs_rep.enc_part)?;
         let pac = extract_and_verify_pac_from_tgs_rep(
             &tgt.session_key,
             &tgs_rep.enc_part,
@@ -172,13 +162,10 @@ impl KdcClient {
             .await
             .map_err(|e| crate::Error::Transport(e.to_string()))?;
         let mut buf = vec![0u8; 64 * 1024];
-        let n = tokio::time::timeout(
-            std::time::Duration::from_secs(5),
-            sock.recv(&mut buf),
-        )
-        .await
-        .map_err(|_| crate::Error::Transport("KDC timeout".into()))?
-        .map_err(|e| crate::Error::Transport(e.to_string()))?;
+        let n = tokio::time::timeout(std::time::Duration::from_secs(5), sock.recv(&mut buf))
+            .await
+            .map_err(|_| crate::Error::Transport("KDC timeout".into()))?
+            .map_err(|e| crate::Error::Transport(e.to_string()))?;
         buf.truncate(n);
         Ok(buf)
     }

@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 use ipkt_kerberos::{
-    ap_rep_for_ldap_bind, encode_ap_req, encode_ap_rep_from_challenge, encode_ap_rep,
+    ap_rep_for_ldap_bind, encode_ap_rep, encode_ap_rep_from_challenge, encode_ap_req,
     ldap_service_principal, parse_ap_req, KerberosSessionKey, PrincipalName,
 };
 

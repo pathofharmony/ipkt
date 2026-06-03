@@ -3,10 +3,9 @@ use crate::drsr_crypto::{decrypt_nt_hash_from_replication, decrypt_pek_entry};
 use crate::drsr_parse::DrsUserSecret;
 use crate::ndr_decode::{rid_from_sid, NdrDecoder};
 use crate::prefix_table::{
-    ATTID_DBCS_PWD, ATTID_PEK_LIST, ATTID_SAM_ACCOUNT_NAME, ATTID_UNICODE_PWD, PrefixEntry,
-    PrefixTable,
+    PrefixEntry, PrefixTable, ATTID_DBCS_PWD, ATTID_PEK_LIST, ATTID_SAM_ACCOUNT_NAME,
+    ATTID_UNICODE_PWD,
 };
-
 
 #[derive(Debug, Clone)]
 pub struct DrsGetNcChangesReplyV6 {
@@ -21,8 +20,10 @@ pub struct DrsGetNcChangesReplyV6 {
     pub pek_list: Vec<[u8; 16]>,
 }
 
-
-pub fn decode_get_nc_changes_reply(stub: &[u8], session_key: &[u8]) -> Option<DrsGetNcChangesReplyV6> {
+pub fn decode_get_nc_changes_reply(
+    stub: &[u8],
+    session_key: &[u8],
+) -> Option<DrsGetNcChangesReplyV6> {
     let mut dec = NdrDecoder::new(stub);
     let out_version = dec.read_u32()?;
     let union_tag = dec.read_u32()?;
@@ -132,8 +133,7 @@ fn decode_replentinflist(
         let next_ptr = node.read_ptr();
         let ent_ptr = node.read_ptr();
         if let Some(ent_off) = ent_ptr {
-            if let Some(user) =
-                decode_entinf(data, ent_off as usize, prefix, session_key, pek_list)
+            if let Some(user) = decode_entinf(data, ent_off as usize, prefix, session_key, pek_list)
             {
                 merge_user(&mut by_rid, user);
             }
@@ -153,22 +153,42 @@ fn decode_entinf(
     session_key: &[u8],
     pek_list: &mut Vec<[u8; 16]>,
 ) -> Option<DrsUserSecret> {
-    decode_entinf_layout(data, off, EntinfLayout::NameFlagsAttr, prefix, session_key, pek_list)
-        .or_else(|| {
-            decode_entinf_layout(data, off, EntinfLayout::AttrFlagsName, prefix, session_key, pek_list)
-        })
-        .or_else(|| {
-            decode_entinf_layout(data, off, EntinfLayout::FlagsAttrOnly, prefix, session_key, pek_list)
-        })
+    decode_entinf_layout(
+        data,
+        off,
+        EntinfLayout::NameFlagsAttr,
+        prefix,
+        session_key,
+        pek_list,
+    )
+    .or_else(|| {
+        decode_entinf_layout(
+            data,
+            off,
+            EntinfLayout::AttrFlagsName,
+            prefix,
+            session_key,
+            pek_list,
+        )
+    })
+    .or_else(|| {
+        decode_entinf_layout(
+            data,
+            off,
+            EntinfLayout::FlagsAttrOnly,
+            prefix,
+            session_key,
+            pek_list,
+        )
+    })
 }
 
 #[derive(Clone, Copy)]
 enum EntinfLayout {
-    
     NameFlagsAttr,
-    
+
     AttrFlagsName,
-    
+
     FlagsAttrOnly,
 }
 
@@ -305,7 +325,10 @@ fn decode_utf16(blob: &[u8]) -> Option<String> {
     String::from_utf16(&units).ok()
 }
 
-pub(crate) fn merge_user(map: &mut std::collections::BTreeMap<u32, DrsUserSecret>, user: DrsUserSecret) {
+pub(crate) fn merge_user(
+    map: &mut std::collections::BTreeMap<u32, DrsUserSecret>,
+    user: DrsUserSecret,
+) {
     let rid = user.rid;
     if rid == 0 {
         return;

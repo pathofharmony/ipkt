@@ -46,7 +46,7 @@ fn challenge_message_round_trips_and_preserves_target_info() {
     assert_eq!(parsed.server_challenge, SERVER_CHALLENGE);
     assert_eq!(parsed.target_name.as_deref(), Some("CONTOSO"));
     assert_eq!(parsed.target_info.pairs().len(), 3);
-    
+
     assert_eq!(parsed.target_info_bytes(), msg.target_info_bytes());
 }
 
@@ -101,7 +101,6 @@ fn rejects_wrong_signature() {
 
 #[test]
 fn rejects_wrong_message_type() {
-    
     let challenge = ChallengeMessage::new(
         NegotiateFlags::client_defaults(),
         SERVER_CHALLENGE,
@@ -113,13 +112,9 @@ fn rejects_wrong_message_type() {
 
 #[test]
 fn malformed_av_pairs_are_rejected() {
-    
     let truncated = [0x01, 0x00, 0xFF, 0xFF, 0x00];
     assert!(TargetInfo::parse(&truncated).is_err());
 }
-
-
-
 
 #[test]
 fn full_ntlmv2_handshake_produces_verifiable_proof() {
@@ -131,11 +126,9 @@ fn full_ntlmv2_handshake_produces_verifiable_proof() {
         .with_client_challenge([0x42; 8])
         .with_exported_session_key([0x77; 16]);
 
-    
     let negotiate = client.negotiate();
     let negotiate_bytes = negotiate.pack();
 
-    
     let challenge = ChallengeMessage::new(
         NegotiateFlags::client_defaults(),
         SERVER_CHALLENGE,
@@ -144,18 +137,15 @@ fn full_ntlmv2_handshake_produces_verifiable_proof() {
     let challenge_bytes = challenge.pack();
     let parsed_challenge = ChallengeMessage::unpack(&challenge_bytes).unwrap();
 
-    
     let outcome = client
         .authenticate(&parsed_challenge, &negotiate_bytes, &challenge_bytes)
         .unwrap();
 
-    
     let response_key = ntowf_v2("S3cr3t!", "alice", "CONTOSO");
-    
+
     let sent = &outcome.message.nt_challenge_response;
     let (sent_proof, temp) = sent.split_at(16);
-    
-    
+
     let target_info = parsed_challenge.target_info_bytes();
     let timestamp = u64::from_le_bytes(temp[8..16].try_into().unwrap());
     let recomputed = ntlm_v2_response(
@@ -168,7 +158,7 @@ fn full_ntlmv2_handshake_produces_verifiable_proof() {
 
     assert_eq!(sent_proof, recomputed.proof());
     assert_eq!(outcome.exported_session_key, [0x77; 16]);
-    
+
     assert!(outcome.message.encrypted_session_key.is_some());
 }
 
@@ -191,11 +181,9 @@ fn ntlmv1_handshake_round_trips() {
         .authenticate(&challenge, &negotiate.pack(), &challenge_bytes)
         .unwrap();
 
-    
     assert_eq!(outcome.message.nt_challenge_response.len(), 24);
     assert_eq!(outcome.message.lm_challenge_response.len(), 24);
 
-    
     let parsed = AuthenticateMessage::unpack(&outcome.message_bytes).unwrap();
     assert_eq!(parsed.user.as_deref(), Some("alice"));
 }

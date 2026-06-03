@@ -5,7 +5,6 @@ use crate::ber::{
 };
 use crate::error::{Error, Result};
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LdapOp {
     BindRequest = 0,
@@ -15,20 +14,16 @@ pub enum LdapOp {
     SearchResultDone = 5,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BindAuth {
-    
     Simple(Vec<u8>),
-    
+
     Sasl {
-        
         mechanism: String,
-        
+
         credentials: Vec<u8>,
     },
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BindRequest {
@@ -38,7 +33,6 @@ pub struct BindRequest {
 }
 
 impl BindRequest {
-    
     #[must_use]
     pub fn simple(version: u8, name: impl Into<String>, password: impl AsRef<[u8]>) -> Self {
         Self {
@@ -48,13 +42,16 @@ impl BindRequest {
         }
     }
 
-    
     #[must_use]
     pub fn sasl_gssapi_init(version: u8, name: impl Into<String>) -> Self {
-        Self::sasl(version, name, "GSSAPI", crate::spnego::gssapi_sasl_credentials())
+        Self::sasl(
+            version,
+            name,
+            "GSSAPI",
+            crate::spnego::gssapi_sasl_credentials(),
+        )
     }
 
-    
     #[must_use]
     pub fn sasl(
         version: u8,
@@ -72,12 +69,11 @@ impl BindRequest {
         }
     }
 
-    
     pub fn encode(&self, message_id: i32) -> Vec<u8> {
         let mut auth_field = Vec::new();
         match &self.auth {
             BindAuth::Simple(pw) => {
-                auth_field.push(0x80); 
+                auth_field.push(0x80);
                 auth_field.extend(encode_octet_string(pw));
             }
             BindAuth::Sasl {
@@ -89,7 +85,7 @@ impl BindRequest {
                 if !credentials.is_empty() {
                     sasl.extend(encode_octet_string(credentials));
                 }
-                auth_field.push(0xA3); 
+                auth_field.push(0xA3);
                 let body = encode_sequence(&sasl);
                 auth_field.extend(encode_len_bytes(body.len()));
                 auth_field.extend(body);
@@ -121,7 +117,6 @@ fn encode_len_bytes(len: usize) -> Vec<u8> {
     w.into_vec()
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SearchRequest {
     pub base_object: String,
@@ -130,7 +125,6 @@ pub struct SearchRequest {
 }
 
 impl SearchRequest {
-    
     pub fn encode(&self, message_id: i32) -> Vec<u8> {
         let mut search = Vec::new();
         search.extend(encode_octet_string(self.base_object.as_bytes()));
@@ -148,7 +142,6 @@ impl SearchRequest {
     }
 }
 
-
 pub fn decode_message_id(bytes: &[u8]) -> Result<i32> {
     let mut reader = ByteReader::new(bytes);
     if reader.read_u8()? != 0x30 {
@@ -157,7 +150,9 @@ pub fn decode_message_id(bytes: &[u8]) -> Result<i32> {
     let _ = read_len(&mut reader)?;
     let tag = reader.read_u8()?;
     if tag != 0x02 {
-        return Err(Error::Ber(format!("expected INTEGER message id, got {tag:#x}")));
+        return Err(Error::Ber(format!(
+            "expected INTEGER message id, got {tag:#x}"
+        )));
     }
     let len = read_len(&mut reader)?;
     let bytes = reader.read_bytes(len)?;

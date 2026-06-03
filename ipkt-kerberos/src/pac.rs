@@ -5,19 +5,15 @@ use ipkt_core::ByteReader;
 
 use crate::Result;
 
-
 pub const PAC_BUFFER_LOGON_INFO: u32 = 1;
 pub const PAC_BUFFER_CREDENTIAL_INFO: u32 = 2;
 pub const PAC_BUFFER_SERVER_CHECKSUM: u32 = 6;
 pub const PAC_BUFFER_KDC_CHECKSUM: u32 = 7;
 
-
 pub const PAC_SIGNATURE_HMAC_MD5: u32 = 0;
-
 
 pub const AD_IF_RELEVANT: i32 = 1;
 pub const AD_WIN2K_PAC: i32 = 128;
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct PacInfoBuffer {
@@ -26,13 +22,11 @@ struct PacInfoBuffer {
     offset: usize,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PacSignature {
     pub signature_type: u32,
     pub signature: [u8; 16],
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PacCredentialInfo {
@@ -40,17 +34,14 @@ pub struct PacCredentialInfo {
     pub kvno: u32,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PacBuffer {
     pub buffer_type: u32,
     pub data: Vec<u8>,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pac {
-    
     pub raw: Vec<u8>,
     pub version: u32,
     pub buffers: Vec<PacBuffer>,
@@ -59,7 +50,6 @@ pub struct Pac {
     pub server_checksum: Option<PacSignature>,
     pub credential_info: Option<PacCredentialInfo>,
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PacLogonInfo {
@@ -71,7 +61,6 @@ pub struct PacLogonInfo {
     pub primary_group_id: u32,
     pub logon_domain_id: Option<Vec<u8>>,
 }
-
 
 pub fn parse_pac(data: &[u8]) -> Result<Pac> {
     if data.len() < 8 {
@@ -119,11 +108,11 @@ pub fn parse_pac(data: &[u8]) -> Result<Pac> {
 }
 
 impl Pac {
-    
-    
-    
-    
-    pub fn verify_checksums(&self, kdc_session_key: &[u8], service_session_key: &[u8]) -> Result<()> {
+    pub fn verify_checksums(
+        &self,
+        kdc_session_key: &[u8],
+        service_session_key: &[u8],
+    ) -> Result<()> {
         if self.kdc_checksum.is_some() {
             verify_pac_signature(
                 &self.raw,
@@ -143,7 +132,6 @@ impl Pac {
         Ok(())
     }
 }
-
 
 pub fn verify_pac_checksums(
     raw: &[u8],
@@ -195,7 +183,6 @@ fn parse_credential_info(data: &[u8]) -> Option<PacCredentialInfo> {
         kvno,
     })
 }
-
 
 #[must_use]
 pub fn pac_signing_key(session_key: &[u8]) -> [u8; 16] {
@@ -271,7 +258,6 @@ fn pac_hmac_md5(key: &[u8; 16], data: &[u8]) -> [u8; 16] {
     mac.finalize().into_bytes().into()
 }
 
-
 pub fn parse_logon_info(data: &[u8]) -> Option<PacLogonInfo> {
     const OFF_EFFECTIVE: usize = 48;
     const OFF_FULL: usize = 60;
@@ -300,7 +286,6 @@ pub fn parse_logon_info(data: &[u8]) -> Option<PacLogonInfo> {
         logon_domain_id,
     })
 }
-
 
 pub fn extract_pac_from_enc_kdc_rep(plain: &[u8]) -> Option<Pac> {
     let blobs = extract_authorization_data_blobs(plain)?;
@@ -340,7 +325,11 @@ fn extract_authorization_data_blobs(plain: &[u8]) -> Option<Vec<Vec<u8>>> {
             out.extend(extract_authorization_data_der(chunk)?);
         }
     }
-    if out.is_empty() { None } else { Some(out) }
+    if out.is_empty() {
+        None
+    } else {
+        Some(out)
+    }
 }
 
 fn extract_authorization_data_der(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
@@ -370,7 +359,11 @@ fn extract_authorization_data_der(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
             }
         }
     }
-    if entries.is_empty() { None } else { Some(entries) }
+    if entries.is_empty() {
+        None
+    } else {
+        Some(entries)
+    }
 }
 
 fn parse_ad_type(entry: &[u8]) -> Option<i32> {
@@ -507,11 +500,13 @@ mod tests {
     }
 
     fn sign_pac(pac: &mut [u8], kdc_key: &[u8], srv_key: &[u8]) {
-        let headers = parse_pac_headers(pac, u32::from_le_bytes(pac[0..4].try_into().unwrap())).unwrap();
+        let headers =
+            parse_pac_headers(pac, u32::from_le_bytes(pac[0..4].try_into().unwrap())).unwrap();
         let kdc_hmac_key = pac_signing_key(kdc_key);
         let kdc_sig = compute_pac_hmac(pac, &headers, &kdc_hmac_key, true).unwrap();
         write_signature(pac, PAC_BUFFER_KDC_CHECKSUM, &kdc_sig);
-        let headers = parse_pac_headers(pac, u32::from_le_bytes(pac[0..4].try_into().unwrap())).unwrap();
+        let headers =
+            parse_pac_headers(pac, u32::from_le_bytes(pac[0..4].try_into().unwrap())).unwrap();
         let srv_hmac_key = pac_signing_key(srv_key);
         let srv_sig = compute_pac_hmac(pac, &headers, &srv_hmac_key, false).unwrap();
         write_signature(pac, PAC_BUFFER_SERVER_CHECKSUM, &srv_sig);
@@ -531,14 +526,8 @@ mod tests {
     fn build_signed_test_pac(kdc_key: &[u8], srv_key: &[u8]) -> Vec<u8> {
         let mut pac = build_pac(vec![
             (PAC_BUFFER_LOGON_INFO, build_logon_buffer()),
-            (
-                PAC_BUFFER_KDC_CHECKSUM,
-                checksum_buffer(&[0u8; 16]),
-            ),
-            (
-                PAC_BUFFER_SERVER_CHECKSUM,
-                checksum_buffer(&[0u8; 16]),
-            ),
+            (PAC_BUFFER_KDC_CHECKSUM, checksum_buffer(&[0u8; 16])),
+            (PAC_BUFFER_SERVER_CHECKSUM, checksum_buffer(&[0u8; 16])),
         ]);
         sign_pac(&mut pac, kdc_key, srv_key);
         pac

@@ -6,7 +6,6 @@ use ipkt_kerberos::{
 
 #[test]
 fn n_fold_matches_rfc3961_reference() {
-    
     let data = b"password";
     let folded = n_fold(16, data);
     assert_eq!(folded.len(), 16);
@@ -18,7 +17,7 @@ fn as_req_encodes_and_decodes() {
     let realm = Realm::new("EXAMPLE.COM");
     let cname = PrincipalName::new(1, vec!["user".into()]);
     let body = KdcReqBody {
-        kdc_options: 0x4081_0000, 
+        kdc_options: 0x4081_0000,
         cname,
         realm: realm.clone(),
         sname: None,

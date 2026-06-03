@@ -1,48 +1,40 @@
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 pub const SMB2_PREAUTH_INTEGRITY_CAP: u16 = 0x0001;
 pub const SMB2_ENCRYPTION_CAP: u16 = 0x0002;
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u16)]
 pub enum Dialect {
-    
     Smb202 = 0x0202,
-    
+
     Smb21 = 0x0210,
-    
+
     Smb30 = 0x0300,
-    
+
     Smb302 = 0x0302,
-    
+
     Smb311 = 0x0311,
 }
 
 impl Dialect {
-    
     #[must_use]
     pub const fn as_u16(self) -> u16 {
         self as u16
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NegotiateContext {
-    
     pub context_type: u16,
-    
+
     pub data: Vec<u8>,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NegotiateRequest {
-    
     pub dialects: Vec<Dialect>,
-    
+
     pub contexts: Vec<NegotiateContext>,
 }
 
@@ -119,7 +111,7 @@ impl Pack for NegotiateRequest {
         writer
             .write_u16_le(36)
             .write_u16_le(self.dialects.len() as u16)
-            .write_u16_le(0) 
+            .write_u16_le(0)
             .write_u16_le(0)
             .write_u32_le(negotiate_offset)
             .write_u16_le(negotiate_length)
@@ -256,11 +248,11 @@ impl Pack for NegotiateResponse {
     fn pack_into(&self, writer: &mut ByteWriter) {
         writer
             .write_u16_le(65)
-            .write_u16_le(1) 
+            .write_u16_le(1)
             .write_u16_le(self.dialect.as_u16())
             .write_u16_le(0)
             .write_bytes(&self.server_guid)
-            .write_u32_le(0) 
+            .write_u32_le(0)
             .write_u32_le(self.max_transact_size)
             .write_u32_le(65536)
             .write_u32_le(65536)

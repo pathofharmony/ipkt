@@ -7,20 +7,16 @@ use crate::messages::{BindRequest, LdapOp, SearchRequest};
 use crate::spnego::gssapi_kerberos_credentials;
 use ipkt_core::ByteReader;
 
-
 pub const LDAP_SASL_BIND_IN_PROGRESS: u8 = 14;
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BindResult {
-    
     pub result_code: u8,
-    
+
     pub message: String,
-    
+
     pub server_sasl_creds: Option<Vec<u8>>,
 }
-
 
 pub struct LdapClient {
     stream: TcpStream,
@@ -28,7 +24,6 @@ pub struct LdapClient {
 }
 
 impl LdapClient {
-    
     pub async fn connect(host: &str, port: u16) -> Result<Self> {
         let addr = format!("{host}:{port}");
         let stream = TcpStream::connect(&addr)
@@ -61,7 +56,6 @@ impl LdapClient {
         Ok(buf)
     }
 
-    
     pub async fn bind_kerberos_exchange(
         &mut self,
         name: impl Into<String>,
@@ -77,13 +71,11 @@ impl LdapClient {
         if first.result_code != LDAP_SASL_BIND_IN_PROGRESS {
             return Ok(first);
         }
-        let ap_rep = make_ap_rep(first.server_sasl_creds.as_deref())
-            .map_err(Error::Ber)?;
+        let ap_rep = make_ap_rep(first.server_sasl_creds.as_deref()).map_err(Error::Ber)?;
         let resp_creds = crate::spnego::gssapi_kerberos_response(&ap_rep);
         self.bind_sasl(&name, "GSSAPI", resp_creds).await
     }
 
-    
     pub async fn bind_kerberos(
         &mut self,
         name: impl Into<String>,
@@ -93,7 +85,6 @@ impl LdapClient {
         self.bind_sasl(name, "GSSAPI", creds).await
     }
 
-    
     pub async fn bind_sasl(
         &mut self,
         name: impl Into<String>,
@@ -106,7 +97,6 @@ impl LdapClient {
         decode_bind_response(&resp)
     }
 
-    
     pub async fn bind_simple(
         &mut self,
         name: impl Into<String>,
@@ -118,7 +108,6 @@ impl LdapClient {
         decode_bind_response(&resp)
     }
 
-    
     pub async fn search(&mut self, request: SearchRequest) -> Result<Vec<u8>> {
         let id = self.next_id();
         self.send_recv(request.encode(id)).await
@@ -139,7 +128,9 @@ fn decode_bind_response(bytes: &[u8]) -> Result<BindResult> {
     let _ = reader.read_bytes(id_len)?;
     let op_tag = reader.read_u8()?;
     if op_tag != 0x0A {
-        return Err(Error::Ber(format!("expected ENUMERATED op, got {op_tag:#x}")));
+        return Err(Error::Ber(format!(
+            "expected ENUMERATED op, got {op_tag:#x}"
+        )));
     }
     let _ = read_len(&mut reader)?;
     let op = reader.read_u8()?;

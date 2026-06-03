@@ -2,9 +2,6 @@ use des::cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit};
 use des::Des;
 use ipkt_ntlm::crypto::{md5, rc4};
 
-
-
-
 pub fn decrypt_drs_attribute(session_key: &[u8], attribute: &[u8]) -> Option<Vec<u8>> {
     if attribute.len() < 20 {
         return None;
@@ -20,7 +17,6 @@ pub fn decrypt_drs_attribute(session_key: &[u8], attribute: &[u8]) -> Option<Vec
     }
     Some(plain[4..].to_vec())
 }
-
 
 pub fn remove_des_layer(crypted_hash: &[u8], rid: u32) -> Option<[u8; 16]> {
     if crypted_hash.len() < 16 {
@@ -62,7 +58,6 @@ fn transform_des_key(key7: [u8; 7]) -> [u8; 8] {
     out
 }
 
-
 pub fn remove_rc4_pek_layer(rc4_plain: &[u8], pek_list: &[[u8; 16]]) -> Option<Vec<u8>> {
     if rc4_plain.is_empty() {
         return None;
@@ -90,7 +85,6 @@ pub fn remove_rc4_pek_layer(rc4_plain: &[u8], pek_list: &[[u8; 16]]) -> Option<V
     Some(out)
 }
 
-
 pub fn decrypt_pek_entry(session_key: &[u8], encrypted_pek: &[u8]) -> Option<[u8; 16]> {
     let plain = decrypt_drs_attribute(session_key, encrypted_pek)?;
     if plain.len() < 16 {
@@ -100,7 +94,6 @@ pub fn decrypt_pek_entry(session_key: &[u8], encrypted_pek: &[u8]) -> Option<[u8
     key.copy_from_slice(&plain[..16]);
     Some(key)
 }
-
 
 pub fn decrypt_nt_hash_from_replication(
     session_key: &[u8],

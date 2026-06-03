@@ -6,7 +6,6 @@ use crate::error::{Error, Result};
 use crate::header::{Smb2Command, Smb2Header};
 use crate::packet::Smb2Packet;
 
-
 #[derive(Debug)]
 pub struct NtlmSessionSetup {
     ntlm: NtlmClient,
@@ -15,7 +14,6 @@ pub struct NtlmSessionSetup {
 }
 
 impl NtlmSessionSetup {
-    
     #[must_use]
     pub fn new(credentials: Credentials) -> Self {
         let ntlm = NtlmClient::new(credentials);
@@ -27,7 +25,6 @@ impl NtlmSessionSetup {
         }
     }
 
-    
     #[must_use]
     pub fn first_request(&self, message_id: u64) -> Smb2Packet<SessionSetupRequest> {
         let header = Smb2Header::request(Smb2Command::SessionSetup, message_id, 0, 0);
@@ -39,11 +36,6 @@ impl NtlmSessionSetup {
         }
     }
 
-    
-    
-    
-    
-    
     pub fn absorb_challenge(
         &mut self,
         response: &SessionSetupResponse,
@@ -54,11 +46,6 @@ impl NtlmSessionSetup {
         Ok(challenge)
     }
 
-    
-    
-    
-    
-    
     pub fn second_request(
         &self,
         challenge: &ChallengeMessage,
@@ -80,7 +67,6 @@ impl NtlmSessionSetup {
         })
     }
 
-    
     pub fn exported_session_key(&self, challenge: &ChallengeMessage) -> Result<[u8; 16]> {
         let challenge_bytes = self
             .challenge_bytes
@@ -92,7 +78,6 @@ impl NtlmSessionSetup {
             .exported_session_key)
     }
 }
-
 
 pub fn parse_ntlm_challenge_from_packet(bytes: &[u8]) -> Result<ChallengeMessage> {
     let packet = Smb2Packet::<SessionSetupResponse>::unpack(bytes).map_err(Error::Codec)?;

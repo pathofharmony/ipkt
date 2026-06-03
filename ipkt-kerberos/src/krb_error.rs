@@ -3,12 +3,10 @@ use ipkt_core::ByteReader;
 use crate::types::{PrincipalName, Realm};
 use crate::Result;
 
-
 pub const KDC_ERR_PREAUTH_REQUIRED: i32 = 24;
 pub const KDC_ERR_ETYPE_NOSUPP: i32 = 14;
 pub const KDC_ERR_SUMTYPE_NOSUPP: i32 = 15;
 pub const KDC_ERR_C_PRINCIPAL_UNKNOWN: i32 = 6;
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KrbError {
@@ -159,14 +157,19 @@ pub fn try_decode_krb_error(bytes: &[u8]) -> Option<KrbError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::asn1::{encode_application, encode_context, encode_general_string, encode_integer, encode_sequence};
+    use crate::asn1::{
+        encode_application, encode_context, encode_general_string, encode_integer, encode_sequence,
+    };
 
     #[test]
     fn krb_error_roundtrip_fields() {
         let mut body = Vec::new();
         body.extend(encode_context(1, &encode_integer(5)));
         body.extend(encode_context(2, &encode_integer(30)));
-        body.extend(encode_context(3, &encode_integer(KDC_ERR_PREAUTH_REQUIRED as u32)));
+        body.extend(encode_context(
+            3,
+            &encode_integer(KDC_ERR_PREAUTH_REQUIRED as u32),
+        ));
         body.extend(encode_context(
             9,
             &encode_general_string("Pre-authentication required"),

@@ -31,7 +31,7 @@ fn reader_reports_eof_without_panicking() {
             available: 2,
         }
     );
-    
+
     assert_eq!(reader.position(), 0);
 }
 
@@ -42,9 +42,8 @@ fn reader_at_resolves_absolute_offsets() {
     let mut at = reader.at(2).unwrap();
     assert_eq!(at.read_u8().unwrap(), 0xCC);
 
-    
     assert!(reader.at(4).unwrap().is_empty());
-    
+
     assert!(reader.at(5).is_err());
 }
 

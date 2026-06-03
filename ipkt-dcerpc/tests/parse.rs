@@ -10,8 +10,7 @@ fn parse_bind_ack_from_bytes() {
         assoc_group: 0,
         context_id: 0,
         abstract_syntax: ipkt_dcerpc::Uuid::parse("12345778-1234-abcd-ef00-0123456789ac").unwrap(),
-        transfer_syntax: ipkt_dcerpc::Uuid::parse("8a885d04-1ceb-11c9-9fe8-08002b104860")
-            .unwrap(),
+        transfer_syntax: ipkt_dcerpc::Uuid::parse("8a885d04-1ceb-11c9-9fe8-08002b104860").unwrap(),
     };
     let _ = RpcMessage {
         header: RpcHeader::new(PduType::Bind, 0),

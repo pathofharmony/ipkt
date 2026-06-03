@@ -8,18 +8,15 @@ use crate::session_key::KerberosSessionKey;
 use crate::types::PrincipalName;
 use crate::Result;
 
-
 pub const KEY_USAGE_AP_REQ_AUTH: u32 = 11;
 
 pub const KEY_USAGE_AP_REP_ENC_PART: u32 = 12;
-
 
 #[derive(Debug, Clone)]
 pub struct ApReqParts {
     pub ticket: Vec<u8>,
     pub enc_authenticator: Vec<u8>,
 }
-
 
 pub fn encode_ap_req(
     ticket_der: &[u8],
@@ -42,7 +39,6 @@ pub fn encode_ap_req(
     Ok(encode_application(14, &encode_sequence(&ap)))
 }
 
-
 pub fn encode_ap_rep_from_challenge(
     service_key: &KerberosSessionKey,
     server_ap_req: &[u8],
@@ -51,31 +47,33 @@ pub fn encode_ap_rep_from_challenge(
     let enc = crate::enc_kdc::parse_encrypted_data(&parts.enc_authenticator)?;
     let _auth_plain = service_key.decrypt(KEY_USAGE_AP_REQ_AUTH, &enc.cipher)?;
     let enc_ap_rep_part = encode_enc_ap_rep_part(service_key)?;
-    let enc_blob = encrypt_encrypted_data(service_key, KEY_USAGE_AP_REP_ENC_PART, &enc_ap_rep_part)?;
+    let enc_blob =
+        encrypt_encrypted_data(service_key, KEY_USAGE_AP_REP_ENC_PART, &enc_ap_rep_part)?;
     let mut inner = Vec::new();
     inner.extend(encode_context(0, &encode_integer(5)));
     inner.extend(encode_context(1, &encode_integer(15)));
     inner.extend(encode_context(2, &enc_blob));
     Ok(encode_application(15, &encode_sequence(&inner)))
 }
-
 
 pub fn encode_ap_rep(session_key: &KerberosSessionKey) -> Result<Vec<u8>> {
     let enc_ap_rep_part = encode_enc_ap_rep_part(session_key)?;
-    let enc_blob = encrypt_encrypted_data(session_key, KEY_USAGE_AP_REP_ENC_PART, &enc_ap_rep_part)?;
+    let enc_blob =
+        encrypt_encrypted_data(session_key, KEY_USAGE_AP_REP_ENC_PART, &enc_ap_rep_part)?;
     let mut inner = Vec::new();
     inner.extend(encode_context(0, &encode_integer(5)));
     inner.extend(encode_context(1, &encode_integer(15)));
     inner.extend(encode_context(2, &enc_blob));
     Ok(encode_application(15, &encode_sequence(&inner)))
 }
-
 
 pub fn parse_ap_req(bytes: &[u8]) -> Result<ApReqParts> {
     let mut reader = ByteReader::new(bytes);
     let tag = reader.read_u8()?;
     if tag != 0x6e {
-        return Err(crate::Error::Der(format!("expected AP-REQ 0x6e, got {tag:#x}")));
+        return Err(crate::Error::Der(format!(
+            "expected AP-REQ 0x6e, got {tag:#x}"
+        )));
     }
     let len = crate::asn1::read_length(&mut reader)?;
     let body = reader.read_bytes(len)?;
@@ -109,10 +107,7 @@ pub fn parse_ap_req(bytes: &[u8]) -> Result<ApReqParts> {
 
 fn encode_enc_ap_rep_part(session_key: &KerberosSessionKey) -> Result<Vec<u8>> {
     let mut inner = Vec::new();
-    inner.extend(encode_context(
-        0,
-        &encode_integer(session_key.etype as u32),
-    ));
+    inner.extend(encode_context(0, &encode_integer(session_key.etype as u32)));
     inner.extend(encode_context(2, &encode_octet_string(&session_key.key)));
     let now = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -158,14 +153,12 @@ fn encode_principal(name: &PrincipalName) -> Vec<u8> {
     encode_sequence(&parts)
 }
 
-
 pub fn encode_pa_tgs_req(ap_req: &[u8]) -> Vec<u8> {
     let mut pa = Vec::new();
     pa.extend(encode_context(1, &encode_integer(1)));
     pa.extend(encode_context(2, &encode_octet_string(ap_req)));
     encode_sequence(&pa)
 }
-
 
 pub fn ap_rep_for_ldap_bind(
     service_key: &KerberosSessionKey,
@@ -238,7 +231,6 @@ fn encode_length_bytes(n: usize) -> Vec<u8> {
         vec![0x82, (n >> 8) as u8, (n & 0xFF) as u8]
     }
 }
-
 
 #[must_use]
 pub fn ldap_service_principal(host: &str, realm: &str) -> PrincipalName {

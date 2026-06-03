@@ -1,8 +1,8 @@
 #![cfg(feature = "kdc")]
 
 use ipkt_kerberos::{
-    default_enctype_list, ldap_service_principal, ETYPE_AES256_CTS_HMAC_SHA1_96,
-    ETYPE_DES3_CBC_SHA1, ETYPE_RC4_HMAC, KdcClient,
+    default_enctype_list, ldap_service_principal, KdcClient, ETYPE_AES256_CTS_HMAC_SHA1_96,
+    ETYPE_DES3_CBC_SHA1, ETYPE_RC4_HMAC,
 };
 
 fn live_config() -> Option<(String, String, String, String)> {
@@ -18,7 +18,10 @@ fn live_config() -> Option<(String, String, String, String)> {
 async fn as_and_tgs_with_pac_signatures() {
     let (realm, user, password, kdc_host) = live_config().expect("set IPKT_AD_* env vars");
     let client = KdcClient::new(&kdc_host, 88);
-    let tgt = client.as_exchange(&realm, &user, &password).await.expect("AS-REP");
+    let tgt = client
+        .as_exchange(&realm, &user, &password)
+        .await
+        .expect("AS-REP");
     assert!(
         tgt.session_key.etype == ETYPE_AES256_CTS_HMAC_SHA1_96
             || tgt.session_key.etype == ETYPE_RC4_HMAC
@@ -65,7 +68,6 @@ async fn as_exchange_legacy_des_etypes_if_enabled() {
             );
         }
         Err(e) => {
-            
             eprintln!("legacy etype AS failed (often expected on hardened AD): {e}");
         }
     }

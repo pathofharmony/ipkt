@@ -29,7 +29,7 @@ fn negotiate_request_contains_dialects() {
     assert!(bytes
         .windows(2)
         .any(|w| w == Dialect::Smb311.as_u16().to_le_bytes()));
-    
+
     assert!(bytes.windows(2).any(|w| w == [0x01, 0x00]));
 }
 

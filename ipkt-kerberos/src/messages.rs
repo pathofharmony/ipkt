@@ -7,20 +7,18 @@ use crate::asn1::{
 use crate::types::{PrincipalName, Realm};
 use crate::Result;
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KdcReqBody {
-    
     pub kdc_options: u32,
-    
+
     pub cname: PrincipalName,
-    
+
     pub realm: Realm,
-    
+
     pub sname: Option<PrincipalName>,
-    
+
     pub nonce: u32,
-    
+
     pub etype: Vec<i32>,
 }
 
@@ -55,22 +53,18 @@ fn encode_kdc_req_body(body: &KdcReqBody) -> Vec<u8> {
     encode_sequence(&inner)
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AsReq {
-    
     pub pvno: u32,
-    
+
     pub msg_type: u32,
-    
+
     pub req_body: KdcReqBody,
 }
-
 
 pub fn encode_as_req(req: &AsReq) -> Result<Vec<u8>> {
     encode_as_req_with_padata(req, None)
 }
-
 
 pub fn encode_as_req_with_padata(req: &AsReq, padata: Option<&[u8]>) -> Result<Vec<u8>> {
     let mut kdc = Vec::new();
@@ -83,7 +77,6 @@ pub fn encode_as_req_with_padata(req: &AsReq, padata: Option<&[u8]>) -> Result<V
     let seq = encode_sequence(&kdc);
     Ok(encode_application(10, &seq))
 }
-
 
 pub fn decode_as_req(bytes: &[u8]) -> Result<AsReq> {
     let mut reader = ByteReader::new(bytes);
@@ -211,14 +204,12 @@ fn decode_principal(bytes: &[u8]) -> Result<PrincipalName> {
     Ok(PrincipalName::new(name_type, components))
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TgsReq {
     pub pvno: u32,
     pub msg_type: u32,
     pub req_body: KdcReqBody,
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AsRep {
@@ -229,7 +220,6 @@ pub struct AsRep {
     pub ticket: Vec<u8>,
     pub enc_part: Vec<u8>,
 }
-
 
 pub fn encode_as_rep(rep: &AsRep) -> Result<Vec<u8>> {
     let mut kdc = Vec::new();
@@ -244,7 +234,6 @@ pub fn encode_as_rep(rep: &AsRep) -> Result<Vec<u8>> {
     kdc.extend(encode_context(6, &rep.enc_part));
     Ok(encode_application(11, &encode_sequence(&kdc)))
 }
-
 
 pub fn decode_as_rep(bytes: &[u8]) -> Result<AsRep> {
     let mut reader = ByteReader::new(bytes);
@@ -302,9 +291,7 @@ pub fn decode_as_rep(bytes: &[u8]) -> Result<AsRep> {
     })
 }
 
-
 pub type TgsRep = AsRep;
-
 
 pub fn encode_tgs_req_with_padata(req: &TgsReq, padata: Option<&[u8]>) -> Result<Vec<u8>> {
     let mut kdc = Vec::new();
@@ -317,11 +304,9 @@ pub fn encode_tgs_req_with_padata(req: &TgsReq, padata: Option<&[u8]>) -> Result
     Ok(encode_application(12, &encode_sequence(&kdc)))
 }
 
-
 pub fn encode_tgs_req(req: &TgsReq) -> Result<Vec<u8>> {
     encode_tgs_req_with_padata(req, None)
 }
-
 
 pub fn decode_tgs_rep(bytes: &[u8]) -> Result<TgsRep> {
     let mut reader = ByteReader::new(bytes);

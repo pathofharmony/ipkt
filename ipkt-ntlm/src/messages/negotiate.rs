@@ -6,42 +6,21 @@ use crate::version::Version;
 
 use super::{encode_oem, read_header, MESSAGE_TYPE_NEGOTIATE};
 
-
-
 const HEADER_BASE: usize = 32;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct NegotiateMessage {
-    
     pub flags: NegotiateFlags,
-    
-    
+
     pub domain: Option<String>,
-    
-    
+
     pub workstation: Option<String>,
-    
+
     pub version: Option<Version>,
 }
 
 impl NegotiateMessage {
-    
     #[must_use]
     pub fn new(flags: NegotiateFlags) -> Self {
         Self {
@@ -52,9 +31,6 @@ impl NegotiateMessage {
         }
     }
 
-    
-    
-    
     #[must_use]
     pub fn with_domain(mut self, domain: impl Into<String>) -> Self {
         self.domain = Some(domain.into());
@@ -62,8 +38,6 @@ impl NegotiateMessage {
         self
     }
 
-    
-    
     #[must_use]
     pub fn with_workstation(mut self, workstation: impl Into<String>) -> Self {
         self.workstation = Some(workstation.into());
@@ -71,8 +45,6 @@ impl NegotiateMessage {
         self
     }
 
-    
-    
     #[must_use]
     pub fn with_version(mut self, version: Version) -> Self {
         self.version = Some(version);

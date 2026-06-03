@@ -2,7 +2,6 @@ use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
 use crate::uuid::Uuid;
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PduType {
@@ -44,7 +43,6 @@ impl PduType {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RpcHeader {
     pub version_major: u8,
@@ -58,15 +56,14 @@ pub struct RpcHeader {
 }
 
 impl RpcHeader {
-    
     #[must_use]
     pub fn new(pdu_type: PduType, call_id: u32) -> Self {
         Self {
             version_major: 5,
             version_minor: 0,
             pdu_type,
-            flags: 0x03,                      
-            data_representation: 0x0000_0010, 
+            flags: 0x03,
+            data_representation: 0x0000_0010,
             frag_length: 0,
             auth_length: 0,
             call_id,
@@ -180,7 +177,6 @@ impl Unpack for RequestPdu {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RpcMessage<B> {
     pub header: RpcHeader,
@@ -210,7 +206,6 @@ impl<B: Unpack> RpcMessage<B> {
         Ok(Self { header, body })
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BindAckPdu {
@@ -257,7 +252,6 @@ impl Unpack for ResponsePdu {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FaultPdu {
     pub alloc_hint: u32,
@@ -286,10 +280,7 @@ pub enum ParsedRpcPdu {
     BindAck(BindAckPdu),
     Response(ResponsePdu),
     Fault(FaultPdu),
-    Other {
-        pdu_type: PduType,
-        body: Vec<u8>,
-    },
+    Other { pdu_type: PduType, body: Vec<u8> },
 }
 
 /// Parses header and dispatches to a known body type.

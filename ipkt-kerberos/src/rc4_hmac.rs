@@ -5,14 +5,15 @@ use md5::Md5;
 use crate::crypto::n_fold;
 use crate::Result;
 
-
 pub const ETYPE_RC4_HMAC: i32 = 23;
-
 
 pub fn string2key_rc4(password: &str, salt: &[u8]) -> [u8; 16] {
     let _ = salt;
     let mut hasher = Md4::new();
-    let utf16: Vec<u8> = password.encode_utf16().flat_map(|u| u.to_le_bytes()).collect();
+    let utf16: Vec<u8> = password
+        .encode_utf16()
+        .flat_map(|u| u.to_le_bytes())
+        .collect();
     hasher.update(utf16);
     let k = hasher.finalize();
     let k1 = hmac_md5(&k, &[0, 0, 0, 1]);
@@ -23,7 +24,6 @@ pub fn string2key_rc4(password: &str, salt: &[u8]) -> [u8; 16] {
     let _ = salt;
     out
 }
-
 
 pub fn encrypt_rc4_hmac(key: &[u8], key_usage: u32, plaintext: &[u8]) -> Result<Vec<u8>> {
     let ki = derive_key_rc4(key, key_usage, 0x55);
@@ -39,7 +39,6 @@ pub fn encrypt_rc4_hmac(key: &[u8], key_usage: u32, plaintext: &[u8]) -> Result<
     out.append(&mut cipher);
     Ok(out)
 }
-
 
 pub fn decrypt_rc4_hmac(key: &[u8], key_usage: u32, cipher: &[u8]) -> Result<Vec<u8>> {
     if cipher.len() < 16 {

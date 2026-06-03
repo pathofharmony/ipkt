@@ -8,7 +8,6 @@ use crate::des_crypto::{
 use crate::rc4_hmac::{decrypt_rc4_hmac, encrypt_rc4_hmac, ETYPE_RC4_HMAC};
 use crate::Result;
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KerberosSessionKey {
     pub etype: i32,
@@ -16,7 +15,6 @@ pub struct KerberosSessionKey {
 }
 
 impl KerberosSessionKey {
-    
     pub fn aes256(key: [u8; 32]) -> Self {
         Self {
             etype: ETYPE_AES256_CTS_HMAC_SHA1_96,
@@ -24,7 +22,6 @@ impl KerberosSessionKey {
         }
     }
 
-    
     pub fn rc4(key: [u8; 16]) -> Self {
         Self {
             etype: ETYPE_RC4_HMAC,
@@ -32,13 +29,11 @@ impl KerberosSessionKey {
         }
     }
 
-    
     #[must_use]
     pub fn from_parts(etype: i32, key: Vec<u8>) -> Self {
         Self { etype, key }
     }
 
-    
     pub fn encrypt(&self, key_usage: u32, plaintext: &[u8], confounder: &[u8]) -> Result<Vec<u8>> {
         match self.etype {
             ETYPE_AES256_CTS_HMAC_SHA1_96 => {
@@ -77,11 +72,13 @@ impl KerberosSessionKey {
                     .map_err(|_| crate::Error::Crypto("bad 3DES key len".into()))?;
                 encrypt_des3_cbc_sha1(&k, key_usage, plaintext)
             }
-            _ => Err(crate::Error::Crypto(format!("unsupported etype {}", self.etype))),
+            _ => Err(crate::Error::Crypto(format!(
+                "unsupported etype {}",
+                self.etype
+            ))),
         }
     }
 
-    
     pub fn decrypt(&self, key_usage: u32, cipher: &[u8]) -> Result<Vec<u8>> {
         match self.etype {
             ETYPE_AES256_CTS_HMAC_SHA1_96 => {
@@ -117,11 +114,13 @@ impl KerberosSessionKey {
                     .map_err(|_| crate::Error::Crypto("bad 3DES key len".into()))?;
                 decrypt_des3_cbc_sha1(&k, key_usage, cipher)
             }
-            _ => Err(crate::Error::Crypto(format!("unsupported etype {}", self.etype))),
+            _ => Err(crate::Error::Crypto(format!(
+                "unsupported etype {}",
+                self.etype
+            ))),
         }
     }
 }
-
 
 #[must_use]
 pub fn default_enctype_list() -> Vec<i32> {

@@ -9,41 +9,26 @@ use crate::version::Version;
 
 use super::{encode_oem, read_header, MESSAGE_TYPE_CHALLENGE};
 
-
-
-
 const HEADER_BASE: usize = 48;
-
-
-
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ChallengeMessage {
-    
     pub flags: NegotiateFlags,
-    
-    
+
     pub target_name: Option<String>,
-    
+
     pub server_challenge: Challenge,
-    
+
     pub target_info: TargetInfo,
-    
+
     pub version: Option<Version>,
 
-    
-    
-    
-    
     #[cfg_attr(feature = "serde", serde(skip))]
     raw_target_info: Vec<u8>,
 }
 
 impl ChallengeMessage {
-    
-    
     #[must_use]
     pub fn new(
         flags: NegotiateFlags,
@@ -65,15 +50,12 @@ impl ChallengeMessage {
         }
     }
 
-    
     #[must_use]
     pub fn with_target_name(mut self, target_name: impl Into<String>) -> Self {
         self.target_name = Some(target_name.into());
         self
     }
 
-    
-    
     #[must_use]
     pub fn with_version(mut self, version: Version) -> Self {
         self.version = Some(version);
@@ -81,9 +63,6 @@ impl ChallengeMessage {
         self
     }
 
-    
-    
-    
     #[must_use]
     pub fn target_info_bytes(&self) -> Vec<u8> {
         if self.raw_target_info.is_empty() {
@@ -126,7 +105,7 @@ impl Pack for ChallengeMessage {
         writer
             .write_u32_le(flags.bits())
             .write_bytes(&self.server_challenge)
-            .write_bytes(&[0u8; 8]); 
+            .write_bytes(&[0u8; 8]);
         target_info_field.write(writer);
         if let Some(version) = self.version {
             version.pack_into(writer);

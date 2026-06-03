@@ -1,6 +1,5 @@
 pub const ETYPE_AES256_CTS_HMAC_SHA1_96: i32 = 18;
 
-
 #[must_use]
 pub fn n_fold(length: usize, data: &[u8]) -> Vec<u8> {
     let lcm = lcm(data.len(), length);
@@ -29,7 +28,6 @@ fn gcd(mut a: usize, mut b: usize) -> usize {
     a
 }
 
-
 pub fn string2key_aes256(
     password: &str,
     salt: &[u8],
@@ -46,4 +44,3 @@ pub fn string2key_aes256(
         .unwrap_or(4096);
     crate::aes_cts::string2key_aes256(password, salt, t_iter)
 }
-

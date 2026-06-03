@@ -1,7 +1,5 @@
 #![allow(missing_docs)]
 
-
-
 mod ber;
 mod error;
 mod messages;

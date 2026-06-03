@@ -34,7 +34,10 @@ fn anonymous_authenticate_has_empty_responses() {
 #[test]
 fn client_with_channel_bindings_builds_negotiate() {
     let hash = channel_bindings_hash(b"fingerprint");
-    let client = NtlmClient::new(Credentials::new("DOM", "user", "pass"))
-        .with_channel_bindings(hash);
-    assert!(client.negotiate().flags.contains(NegotiateFlags::NEGOTIATE_NTLM));
+    let client =
+        NtlmClient::new(Credentials::new("DOM", "user", "pass")).with_channel_bindings(hash);
+    assert!(client
+        .negotiate()
+        .flags
+        .contains(NegotiateFlags::NEGOTIATE_NTLM));
 }

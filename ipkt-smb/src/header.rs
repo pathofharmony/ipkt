@@ -1,65 +1,59 @@
 use bitflags::bitflags;
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 pub const SMB2_PROTOCOL_ID: [u8; 4] = [0xFE, b'S', b'M', b'B'];
-
 
 pub const SMB2_HEADER_SIZE: usize = 64;
 
 bitflags! {
-    
+
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
     pub struct Smb2Flags: u32 {
-        
+
         const SERVER_TO_REDIR = 0x0000_0001;
-        
+
         const ASYNC_COMMAND = 0x0000_0002;
-        
+
         const RELATED_OPERATIONS = 0x0000_0004;
-        
+
         const SIGNED = 0x0000_0008;
-        
+
         const DFS_OPERATIONS = 0x1000_0000;
-        
+
         const REPLAY_OPERATION = 0x2000_0000;
     }
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u16)]
 pub enum Smb2Command {
-    
     Negotiate = 0x0000,
-    
+
     SessionSetup = 0x0001,
-    
+
     Logoff = 0x0002,
-    
+
     TreeConnect = 0x0003,
-    
+
     TreeDisconnect = 0x0004,
-    
+
     Create = 0x0005,
-    
+
     Close = 0x0006,
-    
+
     Read = 0x0008,
-    
+
     Write = 0x0009,
-    
+
     Echo = 0x000E,
 }
 
 impl Smb2Command {
-    
     #[must_use]
     pub const fn as_u16(self) -> u16 {
         self as u16
     }
 
-    
     #[must_use]
     pub const fn from_u16(value: u16) -> Option<Self> {
         Some(match value {
@@ -78,33 +72,30 @@ impl Smb2Command {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Smb2Header {
-    
     pub credit_charge: u16,
-    
+
     pub status: u32,
-    
+
     pub command: Smb2Command,
-    
+
     pub credits: u16,
-    
+
     pub flags: Smb2Flags,
-    
+
     pub next_command: u32,
-    
+
     pub message_id: u64,
-    
+
     pub tree_id: u32,
-    
+
     pub session_id: u64,
-    
+
     pub signature: [u8; 16],
 }
 
 impl Smb2Header {
-    
     #[must_use]
     pub fn request(command: Smb2Command, message_id: u64, session_id: u64, tree_id: u32) -> Self {
         Self {
@@ -121,10 +112,8 @@ impl Smb2Header {
         }
     }
 
-    
     #[must_use]
     pub fn is_success(&self) -> bool {
-        
         self.status == 0 || (self.status & 0xC000_0000) == 0
     }
 }
@@ -133,7 +122,7 @@ impl Pack for Smb2Header {
     fn pack_into(&self, writer: &mut ByteWriter) {
         writer
             .write_bytes(&SMB2_PROTOCOL_ID)
-            .write_u16_le(64) 
+            .write_u16_le(64)
             .write_u16_le(self.credit_charge)
             .write_u32_le(self.status)
             .write_u16_le(self.command.as_u16())
@@ -141,7 +130,7 @@ impl Pack for Smb2Header {
             .write_u32_le(self.flags.bits())
             .write_u32_le(self.next_command)
             .write_u64_le(self.message_id)
-            .write_u32_le(0) 
+            .write_u32_le(0)
             .write_u32_le(self.tree_id)
             .write_u64_le(self.session_id)
             .write_bytes(&self.signature);

@@ -3,19 +3,15 @@ use ipkt_dcerpc::{PduType, RequestPdu, RpcHeader, RpcMessage, Uuid};
 use crate::ndr_rpc::NdrRpcEncoder;
 use crate::prefix_table::PrefixTable;
 
-
 pub const DRSUAPI_INTERFACE: &str = "e3514235-4b06-11d1-ab04-00c04fc2dcd2";
 
-
 pub const DRSUAPI_TRANSFER_SYNTAX: &str = "e3514235-4b06-11d1-ab04-00c04fc2dcd2";
-
 
 pub const DRS_INIT_SYNC: u32 = 0x0000_0001;
 
 pub const DRS_WRIT_REP: u32 = 0x0000_0010;
 
 pub const EXOP_REPL_OBJ: u32 = 0x0000_0006;
-
 
 #[must_use]
 pub fn domain_to_dn(domain: &str) -> String {
@@ -31,12 +27,10 @@ pub fn domain_to_dn(domain: &str) -> String {
     }
 }
 
-
 pub fn drs_bind_request() -> RpcMessage<RequestPdu> {
     let stub = NdrRpcEncoder::new().drs_bind();
     rpc_request(0, 0, stub)
 }
-
 
 pub fn drs_domain_controller_info_request(
     drs_handle: &[u8; 20],
@@ -46,22 +40,16 @@ pub fn drs_domain_controller_info_request(
     rpc_request(1, 16, stub)
 }
 
-
 pub fn drs_crack_names_request(
     drs_handle: &[u8; 20],
     name: &str,
     format_offered: u32,
     format_desired: u32,
 ) -> RpcMessage<RequestPdu> {
-    let stub = NdrRpcEncoder::new().drs_crack_names_v1(
-        drs_handle,
-        name,
-        format_offered,
-        format_desired,
-    );
+    let stub =
+        NdrRpcEncoder::new().drs_crack_names_v1(drs_handle, name, format_offered, format_desired);
     rpc_request(3, 12, stub)
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct DrsUsnVector {
@@ -71,7 +59,6 @@ pub struct DrsUsnVector {
 }
 
 impl DrsUsnVector {
-    
     #[must_use]
     pub fn as_tuple(self) -> (u32, u32, u32) {
         (
@@ -81,7 +68,6 @@ impl DrsUsnVector {
         )
     }
 }
-
 
 pub fn drs_get_nc_changes_request(
     drs_handle: &[u8; 20],
@@ -119,7 +105,6 @@ fn rpc_request(call_id: u32, opnum: u16, stub: Vec<u8>) -> RpcMessage<RequestPdu
         },
     }
 }
-
 
 pub fn drsu_bind_uuids() -> Result<(Uuid, Uuid), ipkt_dcerpc::Error> {
     Ok((

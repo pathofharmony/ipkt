@@ -1,15 +1,9 @@
 use crate::bytes::{ByteReader, ByteWriter};
 use crate::error::Result;
 
-
 pub trait Pack {
-    
     fn pack_into(&self, writer: &mut ByteWriter);
 
-    
-    
-    
-    
     #[must_use]
     fn pack(&self) -> Vec<u8> {
         let mut writer = ByteWriter::new();
@@ -18,15 +12,7 @@ pub trait Pack {
     }
 }
 
-
 pub trait Unpack: Sized {
-    
-    
-    
-    
-    
-    
-    
     fn unpack_from(reader: &mut ByteReader<'_>) -> Result<Self>;
 
     /// Parses a value of `Self` from a complete byte slice.

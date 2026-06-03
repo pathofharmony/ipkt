@@ -1,13 +1,5 @@
 use crate::error::{Error, Result};
 
-
-
-
-
-
-
-
-
 #[must_use]
 pub fn encode_utf16le(value: &str) -> Vec<u8> {
     let mut out = Vec::with_capacity(value.len() * 2);
@@ -16,12 +8,6 @@ pub fn encode_utf16le(value: &str) -> Vec<u8> {
     }
     out
 }
-
-
-
-
-
-
 
 pub fn decode_utf16le(bytes: &[u8]) -> Result<String> {
     if bytes.len() % 2 != 0 {

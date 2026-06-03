@@ -1,5 +1,5 @@
 #![allow(missing_docs)]
-use ipkt_rpc::{make_attid, oid_from_attid, PrefixTable, OID_UNICODE_PWD, ATTID_UNICODE_PWD};
+use ipkt_rpc::{make_attid, oid_from_attid, PrefixTable, ATTID_UNICODE_PWD, OID_UNICODE_PWD};
 
 #[test]
 fn make_attid_oid_round_trip() {

@@ -3,39 +3,36 @@ use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
 use crate::error::{Error, Result};
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[non_exhaustive]
 pub enum AvId {
-    
     Eol,
-    
+
     NbComputerName,
-    
+
     NbDomainName,
-    
+
     DnsComputerName,
-    
+
     DnsDomainName,
-    
+
     DnsTreeName,
-    
+
     Flags,
-    
+
     Timestamp,
-    
+
     SingleHost,
-    
+
     TargetName,
-    
+
     ChannelBindings,
-    
+
     Unknown(u16),
 }
 
 impl AvId {
-    
     #[must_use]
     pub const fn as_u16(self) -> u16 {
         match self {
@@ -54,7 +51,6 @@ impl AvId {
         }
     }
 
-    
     #[must_use]
     pub const fn from_u16(value: u16) -> Self {
         match value {
@@ -74,18 +70,15 @@ impl AvId {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AvPair {
-    
     pub id: AvId,
-    
+
     pub value: Vec<u8>,
 }
 
 impl AvPair {
-    
     #[must_use]
     pub fn new(id: AvId, value: impl Into<Vec<u8>>) -> Self {
         Self {
@@ -94,25 +87,15 @@ impl AvPair {
         }
     }
 
-    
     #[must_use]
     pub fn string(id: AvId, value: &str) -> Self {
         Self::new(id, encode_utf16le(value))
     }
 
-    
-    
-    
-    
-    
     pub fn as_string(&self) -> Result<String> {
         Ok(decode_utf16le(&self.value)?)
     }
 }
-
-
-
-
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -121,38 +104,31 @@ pub struct TargetInfo {
 }
 
 impl TargetInfo {
-    
     #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
-    
     #[must_use]
     pub fn pairs(&self) -> &[AvPair] {
         &self.pairs
     }
 
-    
     #[must_use]
     pub fn with(mut self, pair: AvPair) -> Self {
         self.pairs.push(pair);
         self
     }
 
-    
     pub fn push(&mut self, pair: AvPair) {
         self.pairs.push(pair);
     }
 
-    
     #[must_use]
     pub fn get(&self, id: AvId) -> Option<&AvPair> {
         self.pairs.iter().find(|pair| pair.id == id)
     }
 
-    
-    
     #[must_use]
     pub fn timestamp(&self) -> Option<u64> {
         let pair = self.get(AvId::Timestamp)?;
@@ -160,7 +136,6 @@ impl TargetInfo {
         Some(u64::from_le_bytes(bytes))
     }
 
-    
     #[must_use]
     pub fn flags(&self) -> Option<u32> {
         let pair = self.get(AvId::Flags)?;
@@ -177,7 +152,7 @@ impl Pack for TargetInfo {
                 .write_u16_le(pair.value.len() as u16)
                 .write_bytes(&pair.value);
         }
-        
+
         writer.write_u16_le(AvId::Eol.as_u16()).write_u16_le(0);
     }
 }

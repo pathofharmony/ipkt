@@ -3,24 +3,19 @@ use ipkt::ntlm::avpair::{AvId, AvPair, TargetInfo};
 use ipkt::ntlm::crypto::{ntowf_v2, Challenge};
 use ipkt::ntlm::{ChallengeMessage, Credentials, NegotiateFlags, NtlmClient};
 
-
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
 fn main() {
-    
     let domain = "CONTOSO";
     let user = "alice";
     let password = "S3cr3t!";
 
-    
     let server_challenge: Challenge = [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef];
 
-    
     let client = NtlmClient::new(Credentials::new(domain, user, password))
         .with_workstation("CLIENT01")
-        
         .with_client_challenge([0x42; 8])
         .with_exported_session_key([0x77; 16]);
 
@@ -29,7 +24,6 @@ fn main() {
     println!("--> NEGOTIATE  ({} bytes)", negotiate_bytes.len());
     println!("    flags: {:?}", negotiate.flags);
 
-    
     let target_info = TargetInfo::new()
         .with(AvPair::string(AvId::NbDomainName, domain))
         .with(AvPair::string(AvId::NbComputerName, "DC01"))
@@ -46,10 +40,8 @@ fn main() {
     println!("<-- CHALLENGE  ({} bytes)", challenge_bytes.len());
     println!("    server challenge: {}", hex(&server_challenge));
 
-    
     let parsed_challenge = ChallengeMessage::unpack(&challenge_bytes).unwrap();
 
-    
     let outcome = client
         .authenticate(&parsed_challenge, &negotiate_bytes, &challenge_bytes)
         .expect("handshake should succeed");
@@ -64,9 +56,6 @@ fn main() {
         hex(&outcome.exported_session_key)
     );
 
-    
-    
-    
     let response_key = ntowf_v2(password, user, domain);
     let sent = &outcome.message.nt_challenge_response;
     let (sent_proof, temp) = sent.split_at(16);

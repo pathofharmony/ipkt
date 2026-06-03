@@ -1,13 +1,11 @@
 use crate::drsr::DrsUsnVector;
 use crate::replentinf::decode_get_nc_changes_reply as decode_v6_reply;
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DrsBindResult {
     pub handle: [u8; 20],
     pub status: u32,
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DrsUserSecret {
@@ -16,7 +14,6 @@ pub struct DrsUserSecret {
     pub lm_hash: Option<[u8; 16]>,
     pub nt_hash: Option<[u8; 16]>,
 }
-
 
 #[derive(Debug, Clone)]
 pub struct DrsNcChangesReply {
@@ -30,13 +27,11 @@ pub struct DrsNcChangesReply {
     pub secrets: Vec<DrsUserSecret>,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DrsCrackNamesResult {
     pub status: u32,
     pub name: String,
 }
-
 
 pub fn parse_drs_bind_response(stub: &[u8]) -> Option<DrsBindResult> {
     if stub.len() < 24 {
@@ -48,7 +43,6 @@ pub fn parse_drs_bind_response(stub: &[u8]) -> Option<DrsBindResult> {
     Some(DrsBindResult { handle, status })
 }
 
-
 pub fn parse_drs_dc_info_ntds_guid(stub: &[u8]) -> Option<[u8; 16]> {
     for window in stub.windows(16) {
         let guid: [u8; 16] = window.try_into().ok()?;
@@ -58,7 +52,6 @@ pub fn parse_drs_dc_info_ntds_guid(stub: &[u8]) -> Option<[u8; 16]> {
     }
     None
 }
-
 
 pub fn parse_drs_crack_names(stub: &[u8]) -> Option<DrsCrackNamesResult> {
     use crate::ndr_decode::NdrDecoder;
@@ -85,9 +78,13 @@ pub fn parse_drs_crack_names(stub: &[u8]) -> Option<DrsCrackNamesResult> {
     None
 }
 
-
 pub fn parse_get_nc_changes_reply(stub: &[u8], session_key: &[u8]) -> DrsNcChangesReply {
-    let out_version = u32::from_le_bytes(stub.get(0..4).unwrap_or(&[0; 4]).try_into().unwrap_or([0; 4]));
+    let out_version = u32::from_le_bytes(
+        stub.get(0..4)
+            .unwrap_or(&[0; 4])
+            .try_into()
+            .unwrap_or([0; 4]),
+    );
     if let Some(v6) = decode_v6_reply(stub, session_key) {
         let _dsa = v6.uuid_dsa_obj_src;
         let _ext = v6.ul_extended_ret;
@@ -113,7 +110,6 @@ pub fn parse_get_nc_changes_reply(stub: &[u8], session_key: &[u8]) -> DrsNcChang
         secrets: Vec::new(),
     }
 }
-
 
 pub fn parse_get_nc_changes_secrets(stub: &[u8], session_key: &[u8]) -> Vec<DrsUserSecret> {
     parse_get_nc_changes_reply(stub, session_key).secrets

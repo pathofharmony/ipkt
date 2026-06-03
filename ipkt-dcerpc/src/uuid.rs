@@ -1,9 +1,7 @@
 use ipkt_core::{ByteReader, ByteWriter, Pack, Result as CoreResult, Unpack};
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Uuid {
-    
     pub data1: u32,
     pub data2: u16,
     pub data3: u16,
@@ -11,7 +9,6 @@ pub struct Uuid {
 }
 
 impl Uuid {
-    
     pub const NIL: Self = Self {
         data1: 0,
         data2: 0,
@@ -19,7 +16,6 @@ impl Uuid {
         data4: [0; 8],
     };
 
-    
     pub fn parse(s: &str) -> crate::Result<Self> {
         let hex: String = s.chars().filter(|c| *c != '-').collect();
         if hex.len() != 32 {

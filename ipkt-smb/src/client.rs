@@ -11,14 +11,13 @@ use crate::commands::{
     NegotiateResponse, ReadRequest, ReadResponse, SessionSetupResponse, TreeConnectRequest,
     TreeConnectResponse, WriteRequest, WriteResponse,
 };
+use crate::encryption::{decrypt_message, encrypt_message, SMB2_TRANSFORM_PROTOCOL_ID};
 use crate::error::{Error, Result};
 use crate::header::{Smb2Command, Smb2Header, SMB2_HEADER_SIZE};
 use crate::packet::{NetbiosSessionMessage, Smb2Packet};
 use crate::session::NtlmSessionSetup;
 use crate::session_keys::SmbSessionKeys;
-use crate::encryption::{decrypt_message, encrypt_message, SMB2_TRANSFORM_PROTOCOL_ID};
 use crate::signing::{self, set_signed_flag, sign_message};
-
 
 pub struct SmbClient {
     stream: TcpStream,
@@ -33,11 +32,6 @@ pub struct SmbClient {
 }
 
 impl SmbClient {
-    
-    
-    
-    
-    
     pub async fn connect(host: &str, port: u16) -> Result<Self> {
         let addr = format!("{host}:{port}");
         let stream = TcpStream::connect(&addr)
@@ -172,7 +166,6 @@ impl SmbClient {
         Ok(response)
     }
 
-    
     pub async fn negotiate(&mut self) -> Result<Dialect> {
         let body = NegotiateRequest::default();
         let response: Smb2Packet<NegotiateResponse> = self
@@ -186,7 +179,6 @@ impl SmbClient {
         Ok(self.dialect)
     }
 
-    
     pub async fn authenticate_ntlm(&mut self, credentials: Credentials) -> Result<SmbSessionKeys> {
         let mut ntlm = NtlmSessionSetup::new(credentials);
         let req1 = ntlm.first_request(self.next_id());
@@ -219,13 +211,11 @@ impl SmbClient {
         Ok(keys)
     }
 
-    
     #[must_use]
     pub fn session_keys(&self) -> Option<&SmbSessionKeys> {
         self.session_keys.as_ref()
     }
 
-    
     pub async fn tree_connect(&mut self, unc_path: &str) -> Result<u32> {
         let body = TreeConnectRequest::new(unc_path);
         let response: Smb2Packet<TreeConnectResponse> = self
@@ -241,7 +231,6 @@ impl SmbClient {
         Ok(self.tree_id)
     }
 
-    
     pub async fn create(&mut self, name: &str) -> Result<[u8; 16]> {
         let body = CreateRequest::open(name);
         let response: Smb2Packet<CreateResponse> = self
@@ -256,7 +245,6 @@ impl SmbClient {
         Ok(response.body.file_id)
     }
 
-    
     pub async fn read(&mut self, file_id: [u8; 16], offset: u64, length: u32) -> Result<Vec<u8>> {
         let body = ReadRequest {
             file_id,
@@ -264,7 +252,13 @@ impl SmbClient {
             length,
         };
         let raw = self
-            .send_recv_raw(Smb2Command::Read, body, Vec::new(), self.session_id, self.tree_id)
+            .send_recv_raw(
+                Smb2Command::Read,
+                body,
+                Vec::new(),
+                self.session_id,
+                self.tree_id,
+            )
             .await?;
         let response = Smb2Packet::<ReadResponse>::unpack(&raw).map_err(Error::Codec)?;
         if !response.header.is_success() {
@@ -281,7 +275,6 @@ impl SmbClient {
         Ok(response.payload)
     }
 
-    
     pub async fn write(&mut self, file_id: [u8; 16], offset: u64, data: Vec<u8>) -> Result<u32> {
         let body = WriteRequest {
             file_id,
@@ -300,13 +293,11 @@ impl SmbClient {
         Ok(response.body.count)
     }
 
-    
     pub async fn pipe_transact(&mut self, file_id: [u8; 16], data: Vec<u8>) -> Result<Vec<u8>> {
         self.write(file_id, 0, data).await?;
         self.read(file_id, 0, 64 * 1024).await
     }
 
-    
     pub async fn close(&mut self, file_id: [u8; 16]) -> Result<()> {
         let body = CloseRequest { file_id };
         let _: Smb2Packet<CloseResponse> = self
@@ -340,19 +331,16 @@ impl SmbClient {
         Ok(packet)
     }
 
-    
     #[must_use]
     pub fn session_id(&self) -> u64 {
         self.session_id
     }
 
-    
     #[must_use]
     pub fn tree_id(&self) -> u32 {
         self.tree_id
     }
 
-    
     #[must_use]
     pub fn signing_enabled(&self) -> bool {
         self.signing_enabled

@@ -2,14 +2,12 @@ use ipkt_core::{ByteReader, ByteWriter};
 
 use crate::error::{Error, Result};
 
-
 const CLASS_APPLICATION: u8 = 0x60;
 const CLASS_CONTEXT: u8 = 0xA0;
 const TAG_INTEGER: u8 = 0x02;
 const TAG_SEQUENCE: u8 = 0x30;
 const TAG_GENERAL_STRING: u8 = 0x1B;
 const TAG_OCTET_STRING: u8 = 0x04;
-
 
 pub fn encode_length_public(writer: &mut ByteWriter, len: usize) {
     encode_length(writer, len);
@@ -27,7 +25,6 @@ fn encode_length(writer: &mut ByteWriter, len: usize) {
             .write_u8((len & 0xFF) as u8);
     }
 }
-
 
 pub fn read_length(reader: &mut ByteReader<'_>) -> Result<usize> {
     let first = reader.read_u8()?;
@@ -130,7 +127,6 @@ pub fn decode_integer(reader: &mut ByteReader<'_>) -> Result<u32> {
     Ok(value)
 }
 
-
 pub fn decode_general_string(reader: &mut ByteReader<'_>) -> Result<String> {
     let tag = reader.read_u8()?;
     if tag != TAG_GENERAL_STRING {
@@ -140,4 +136,3 @@ pub fn decode_general_string(reader: &mut ByteReader<'_>) -> Result<String> {
     let bytes = reader.read_bytes(len)?;
     String::from_utf8(bytes.to_vec()).map_err(|e| Error::Der(e.to_string()))
 }
-

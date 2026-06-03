@@ -11,30 +11,24 @@ use crate::flags::NegotiateFlags;
 use crate::messages::{AuthenticateMessage, ChallengeMessage, NegotiateMessage};
 use crate::version::Version;
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum NtlmVariant {
-    
     V1,
-    
+
     V1Extended,
-    
+
     V2,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AuthOutcome {
-    
     pub message: AuthenticateMessage,
-    
+
     pub message_bytes: Vec<u8>,
-    
-    
+
     pub exported_session_key: [u8; 16],
 }
-
 
 #[derive(Debug, Clone)]
 pub struct NtlmClient {
@@ -51,8 +45,6 @@ pub struct NtlmClient {
 }
 
 impl NtlmClient {
-    
-    
     #[must_use]
     pub fn new(credentials: Credentials) -> Self {
         Self {
@@ -69,77 +61,60 @@ impl NtlmClient {
         }
     }
 
-    
     #[must_use]
     pub fn anonymous() -> Self {
-        Self::new(Credentials::anonymous()).with_flags(
-            NegotiateFlags::client_defaults() | NegotiateFlags::NEGOTIATE_ANONYMOUS,
-        )
+        Self::new(Credentials::anonymous())
+            .with_flags(NegotiateFlags::client_defaults() | NegotiateFlags::NEGOTIATE_ANONYMOUS)
     }
 
-    
     #[must_use]
     pub fn with_channel_bindings(mut self, hash: [u8; 16]) -> Self {
         self.channel_bindings = Some(hash);
         self
     }
 
-    
     #[must_use]
     pub fn with_flags(mut self, flags: NegotiateFlags) -> Self {
         self.flags = flags;
         self
     }
 
-    
     #[must_use]
     pub fn with_workstation(mut self, workstation: impl Into<String>) -> Self {
         self.workstation = Some(workstation.into());
         self
     }
 
-    
     #[must_use]
     pub fn with_variant(mut self, variant: NtlmVariant) -> Self {
         self.variant = variant;
         self
     }
 
-    
-    
-    
-    
     #[must_use]
     pub fn with_mic(mut self, enabled: bool) -> Self {
         self.compute_mic = enabled;
         self
     }
 
-    
-    
     #[must_use]
     pub fn with_client_challenge(mut self, challenge: Challenge) -> Self {
         self.client_challenge = Some(challenge);
         self
     }
 
-    
-    
     #[must_use]
     pub fn with_timestamp(mut self, timestamp: u64) -> Self {
         self.timestamp = Some(timestamp);
         self
     }
 
-    
-    
     #[must_use]
     pub fn with_exported_session_key(mut self, key: [u8; 16]) -> Self {
         self.exported_session_key = Some(key);
         self
     }
 
-    
     #[must_use]
     pub fn negotiate(&self) -> NegotiateMessage {
         let mut msg = NegotiateMessage::new(self.flags);
@@ -149,28 +124,15 @@ impl NtlmClient {
         msg
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     pub fn authenticate(
         &self,
         challenge: &ChallengeMessage,
         negotiate_bytes: &[u8],
         challenge_bytes: &[u8],
     ) -> Result<AuthOutcome> {
-        
         let flags = self.flags & challenge.flags;
         if flags.contains(NegotiateFlags::NEGOTIATE_ANONYMOUS) {
-            let message =
-                AuthenticateMessage::new(flags, Vec::new(), Vec::new());
+            let message = AuthenticateMessage::new(flags, Vec::new(), Vec::new());
             let message_bytes = message.pack();
             return Ok(AuthOutcome {
                 message,
@@ -186,7 +148,6 @@ impl NtlmClient {
             NtlmVariant::V2 => self.compute_v2(challenge, &client_challenge),
         };
 
-        
         let kek = match self.variant {
             NtlmVariant::V2 => key_exchange_key_ntlmv2(&session_base_key),
             NtlmVariant::V1Extended => key_exchange_key_ntlmv1_extended(
@@ -205,7 +166,6 @@ impl NtlmClient {
                 (kek, None)
             };
 
-        
         let mut message = AuthenticateMessage::new(flags, lm_response, nt_response)
             .with_identity(self.credentials.domain(), self.credentials.user());
         if let Some(workstation) = &self.workstation {
@@ -218,7 +178,6 @@ impl NtlmClient {
             message = message.with_encrypted_session_key(key);
         }
 
-        
         let message_bytes = if self.compute_mic && self.variant == NtlmVariant::V2 {
             message = message.with_mic_placeholder();
             let mut bytes = message.pack();
@@ -244,14 +203,11 @@ impl NtlmClient {
         })
     }
 
-    
-
     fn compute_v1(&self, challenge: &ChallengeMessage) -> (Vec<u8>, Vec<u8>, [u8; 16]) {
         let nt_hash = self.credentials.nt_hash();
         let lm_hash = match self.credentials.secret() {
             crate::credentials::Secret::Password(p) => crypto::lmowf_v1(p),
-            
-            
+
             crate::credentials::Secret::NtHash(_) => nt_hash,
         };
         let nt = crypto::ntlm_v1_response(&nt_hash, &challenge.server_challenge).to_vec();
@@ -316,8 +272,6 @@ impl NtlmClient {
             &target_info_bytes,
         );
 
-        
-        
         let lm = if server_has_timestamp {
             vec![0u8; 24]
         } else {
@@ -326,8 +280,6 @@ impl NtlmClient {
 
         (lm, v2.nt_challenge_response(), v2.session_base_key())
     }
-
-    
 
     fn resolve_client_challenge(&self) -> Result<Challenge> {
         if let Some(challenge) = self.client_challenge {
@@ -343,8 +295,6 @@ impl NtlmClient {
         random_array().ok_or(crate::error::Error::MissingField("exported_session_key"))
     }
 }
-
-
 
 fn random_array<const N: usize>() -> Option<[u8; N]> {
     #[cfg(feature = "rand")]

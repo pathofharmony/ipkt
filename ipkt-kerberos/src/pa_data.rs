@@ -1,16 +1,14 @@
 use ipkt_core::ByteWriter;
 
-use crate::asn1::{encode_context, encode_integer, encode_sequence};
 use crate::aes_cts::{encrypt_aes256, string2key_aes256, KEY_USAGE_PA_ENC_TIMESTAMP};
+use crate::asn1::{encode_context, encode_integer, encode_sequence};
 use crate::crypto::ETYPE_AES256_CTS_HMAC_SHA1_96;
 use crate::types::EncryptedData;
 use crate::Result;
 
-
 pub const PA_ENC_TIMESTAMP: i32 = 2;
 
 pub const PA_PAC_REQUEST: i32 = 128;
-
 
 #[must_use]
 pub fn encode_pa_pac_request() -> Vec<u8> {
@@ -21,7 +19,6 @@ pub fn encode_pa_pac_request() -> Vec<u8> {
     pa.extend(encode_context(2, &encode_sequence(&body)));
     encode_sequence(&pa)
 }
-
 
 pub fn build_pa_enc_timestamp(
     password: &str,
@@ -68,7 +65,6 @@ fn fixed_confounder(timestamp: u64, usec: u32) -> [u8; 16] {
     c[8..12].copy_from_slice(&usec.to_le_bytes());
     c
 }
-
 
 pub fn encode_pa_enc_timestamp(enc: &EncryptedData) -> Vec<u8> {
     let mut ed = Vec::new();

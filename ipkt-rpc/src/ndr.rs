@@ -1,15 +1,13 @@
 use ipkt_core::ByteWriter;
 
-
 #[derive(Debug, Default)]
 pub struct NdrWriter {
     buffer: ByteWriter,
-    
+
     _referent_id: u32,
 }
 
 impl NdrWriter {
-    
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -18,7 +16,6 @@ impl NdrWriter {
         }
     }
 
-    
     pub fn align(&mut self, boundary: usize) {
         let pad = (boundary - (self.buffer.len() % boundary)) % boundary;
         for _ in 0..pad {
@@ -26,21 +23,18 @@ impl NdrWriter {
         }
     }
 
-    
     pub fn write_u32(&mut self, value: u32) -> &mut Self {
         self.align(4);
         self.buffer.write_u32_le(value);
         self
     }
 
-    
     pub fn write_u16(&mut self, value: u16) -> &mut Self {
         self.align(2);
         self.buffer.write_u16_le(value);
         self
     }
 
-    
     pub fn write_unicode_string(&mut self, value: &str) -> &mut Self {
         let units: Vec<u16> = value.encode_utf16().collect();
         let max = units.len() as u32;
@@ -55,14 +49,12 @@ impl NdrWriter {
         self
     }
 
-    
     pub fn write_bytes16(&mut self, bytes: &[u8; 16]) -> &mut Self {
         self.align(4);
         self.buffer.write_bytes(bytes);
         self
     }
 
-    
     pub fn write_sampr_handle(&mut self, handle: &[u8; 20]) -> &mut Self {
         let handle_type = u32::from_le_bytes(handle[0..4].try_into().expect("4 bytes"));
         self.write_u32(handle_type);
@@ -71,13 +63,11 @@ impl NdrWriter {
         self
     }
 
-    
     #[must_use]
     pub fn finish(self) -> Vec<u8> {
         self.buffer.into_vec()
     }
 }
-
 
 #[derive(Debug)]
 pub struct NdrReader<'a> {
@@ -86,7 +76,6 @@ pub struct NdrReader<'a> {
 }
 
 impl<'a> NdrReader<'a> {
-    
     #[must_use]
     pub fn new(data: &'a [u8]) -> Self {
         Self { data, pos: 0 }

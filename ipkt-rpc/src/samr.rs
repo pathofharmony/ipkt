@@ -2,15 +2,12 @@ use ipkt_dcerpc::{PduType, RequestPdu, RpcHeader, RpcMessage, Uuid};
 
 use crate::ndr::NdrWriter;
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SamrConnectResponse {
-    
     pub status: u32,
-    
+
     pub server_handle: [u8; 20],
 }
-
 
 pub fn parse_samr_connect_response(stub: &[u8]) -> Option<SamrConnectResponse> {
     if stub.len() < 20 {
@@ -29,12 +26,9 @@ pub fn parse_samr_connect_response(stub: &[u8]) -> Option<SamrConnectResponse> {
     })
 }
 
-
 pub const SAMR_INTERFACE: &str = "12345778-1234-abcd-ef00-0123456789ac";
 
-
 pub const NDR_TRANSFER_SYNTAX: &str = "8a885d04-1ceb-11c9-9fe8-08002b104860";
-
 
 pub fn samr_connect_request(server_name: Option<&str>, access_mask: u32) -> RpcMessage<RequestPdu> {
     let mut ndr = NdrWriter::new();
@@ -42,7 +36,7 @@ pub fn samr_connect_request(server_name: Option<&str>, access_mask: u32) -> RpcM
     if let Some(name) = server_name {
         ndr.write_unicode_string(name);
     } else {
-        ndr.write_u32(0); 
+        ndr.write_u32(0);
     }
     let stub = ndr.finish();
     RpcMessage {
@@ -56,8 +50,10 @@ pub fn samr_connect_request(server_name: Option<&str>, access_mask: u32) -> RpcM
     }
 }
 
-
-pub fn samr_lookup_domain_request(server_handle: &[u8; 20], domain: &str) -> RpcMessage<RequestPdu> {
+pub fn samr_lookup_domain_request(
+    server_handle: &[u8; 20],
+    domain: &str,
+) -> RpcMessage<RequestPdu> {
     let mut ndr = NdrWriter::new();
     ndr.write_sampr_handle(server_handle);
     ndr.write_unicode_string(domain);
@@ -73,7 +69,6 @@ pub fn samr_lookup_domain_request(server_handle: &[u8; 20], domain: &str) -> Rpc
     }
 }
 
-
 pub fn samr_enumerate_users_request(
     domain_handle: &[u8; 20],
     resume_handle: u32,
@@ -82,7 +77,7 @@ pub fn samr_enumerate_users_request(
     let mut ndr = NdrWriter::new();
     ndr.write_sampr_handle(domain_handle);
     ndr.write_u32(resume_handle);
-    ndr.write_u32(1); 
+    ndr.write_u32(1);
     ndr.write_u32(max_size);
     let stub = ndr.finish();
     RpcMessage {
@@ -96,13 +91,11 @@ pub fn samr_enumerate_users_request(
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SamrUserEntry {
     pub rid: u32,
     pub name: String,
 }
-
 
 pub fn parse_samr_enumerate_users(stub: &[u8]) -> Vec<SamrUserEntry> {
     let mut out = Vec::new();
@@ -120,7 +113,6 @@ pub fn parse_samr_enumerate_users(stub: &[u8]) -> Vec<SamrUserEntry> {
     }
     out
 }
-
 
 pub fn samr_bind_uuids() -> Result<(Uuid, Uuid), ipkt_dcerpc::Error> {
     Ok((

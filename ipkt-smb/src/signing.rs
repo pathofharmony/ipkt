@@ -5,15 +5,9 @@ use crate::header::Smb2Flags;
 
 type HmacSha256 = Hmac<Sha256>;
 
-
 pub const SMB2_SIGNATURE_LEN: usize = 16;
 
-
 pub const SMB2_SIGNATURE_OFFSET: usize = 48;
-
-
-
-
 
 #[must_use]
 pub fn compute_signature(signing_key: &[u8], message: &[u8]) -> [u8; SMB2_SIGNATURE_LEN] {
@@ -26,14 +20,11 @@ pub fn compute_signature(signing_key: &[u8], message: &[u8]) -> [u8; SMB2_SIGNAT
     sig
 }
 
-
 pub fn zero_signature(message: &mut [u8]) {
     if message.len() >= SMB2_SIGNATURE_OFFSET + SMB2_SIGNATURE_LEN {
-        message[SMB2_SIGNATURE_OFFSET..SMB2_SIGNATURE_OFFSET + SMB2_SIGNATURE_LEN]
-            .fill(0);
+        message[SMB2_SIGNATURE_OFFSET..SMB2_SIGNATURE_OFFSET + SMB2_SIGNATURE_LEN].fill(0);
     }
 }
-
 
 pub fn sign_message(signing_key: &[u8], message: &mut [u8]) {
     zero_signature(message);
@@ -42,17 +33,15 @@ pub fn sign_message(signing_key: &[u8], message: &mut [u8]) {
         .copy_from_slice(&sig);
 }
 
-
 #[must_use]
 pub fn header_wants_signing(header_bytes: &[u8]) -> bool {
     if header_bytes.len() < 16 {
         return false;
     }
-    
+
     let flags = u32::from_le_bytes(header_bytes[12..16].try_into().unwrap_or([0; 4]));
     Smb2Flags::from_bits_retain(flags).contains(Smb2Flags::SIGNED)
 }
-
 
 #[must_use]
 pub fn verify_signature(signing_key: &[u8], message: &[u8]) -> bool {
@@ -67,7 +56,6 @@ pub fn verify_signature(signing_key: &[u8], message: &[u8]) -> bool {
     zero_signature(&mut copy);
     stored == compute_signature(signing_key, &copy)
 }
-
 
 pub fn set_signed_flag(message: &mut [u8]) {
     if message.len() >= 16 {
